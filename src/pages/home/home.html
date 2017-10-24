@@ -1,17 +1,53 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar no-border-bottom>
     <ion-title>Home</ion-title>
+    <ion-buttons end padding>
+      <button ion-button icon-only color="royal" (click)="toggleMap()">
+        <ion-icon [name]="showList ? 'map' : 'list'"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
+  <ion-toolbar>
+    <div>
+      <ion-segment [(ngModel)]="stopStatus">
+        <ion-segment-button value="pending">
+          Pending
+        </ion-segment-button>
+        <ion-segment-button value="completed">
+          Completed
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content padding>
-  <h2>Welcome to Ionic!</h2>
-  <p>
-    This starter project comes with simple tabs-based layout for apps
-    that are going to primarily use a Tabbed UI.
-  </p>
-  <p>
-    Take a look at the <code>src/pages/</code> directory to add or change tabs,
-    update any existing page or create new pages.
-  </p>
+    <div *ngIf="showList">
+      <div [ngSwitch]="stopStatus">
+
+        <ion-list *ngSwitchCase="'pending'">
+          <ion-item *ngFor="let stop of pendingStops">
+            <ion-avatar item-start>
+              {{ stop.type }}
+            </ion-avatar>
+            <h2>{{ stop.address }}</h2>
+            <h3>{{ stop.size }}</h3>
+          </ion-item>  
+        </ion-list>
+
+        <ion-list *ngSwitchCase="'pending'">
+          <ion-item *ngFor="let stop of completedStops">
+            <ion-avatar item-start>
+              {{ stop.type }}
+            </ion-avatar>
+            <h2>{{ stop.address }}</h2>
+            <h3>{{ stop.size }}</h3>
+          </ion-item>  
+        </ion-list>
+
+      </div>
+    </div>
+    <div *ngIf="showMap">
+      <div #map id="map" style="height: 100%;"></div>
+    </div>
 </ion-content>
