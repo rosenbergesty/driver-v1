@@ -1,17 +1,16 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { NavController, ModalController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
-import { Driver } from '../../models/driver';
-import { Stop } from '../../models/stop';
-import { DriversProvider } from '../../providers/drivers/drivers';
 
-import { GoogleMaps, GoogleMap } from '@ionic-native/google-maps';
-import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocationResponse } from '@ionic-native/background-geolocation';
+import { Driver } from '../../models/driver';
+import { DriversProvider } from '../../providers/drivers/drivers';
+import { MapsProvider } from '../../providers/maps/maps';
+import { StartPage } from '../start/start';
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
-  providers: [ DriversProvider ]
+  providers: [ DriversProvider, MapsProvider ]
 })
 export class HomePage {
 
@@ -23,14 +22,17 @@ export class HomePage {
   public showList = true;
   public showMap = false;
 
-  constructor(private backgroundGeolocation: BackgroundGeolocation, public navCtrl: NavController, public storage: Storage, public drivers: DriversProvider) {
+  public pendingMarkers = [];
+  public completedMarkers = [];
 
+  @ViewChild('map') mapElement;
+  map: any;
+
+  constructor( public modalCtrl: ModalController, public navCtrl: NavController, public storage: Storage, public drivers: DriversProvider, public maps: MapsProvider) {
     this.storage.get('user').then((val) => {
       this.user = val;
       this.fetchStops()
     });
-
-    this.getLocation();
   }
 
   public fetchStops(){
@@ -49,6 +51,7 @@ export class HomePage {
           resp.forEach(stop =>{
             if(stop.status == 'pending'){
               this.pendingStops.push(stop);
+              this.showStops();
             } else if (stop.status == 'completed'){
               this.completedStops.push(stop);
             }
@@ -66,28 +69,74 @@ export class HomePage {
   public toggleMap(){
     this.showList = !this.showList;
     this.showMap = !this.showMap;
+
+    if(this.showMap){
+      this.showStops();
+    }
   }
 
+  ionViewDidLoad(){
+    this.initMap();
+  }
 
-  getLocation(){ 
-    const config: BackgroundGeolocationConfig = {
-      desiredAccuracy: 10,
-      stationaryRadius: 20,
-      distanceFilter: 30,
-      debug: true, //  enable this hear sounds for background-geolocation life-cycle.
-      stopOnTerminate: false, // enable this to clear background location settings when the app terminates
-    };
-    this.backgroundGeolocation.configure(config).subscribe(
-      (location: BackgroundGeolocationResponse) => {
-        console.log('location: ' + location);
-        this.backgroundGeolocation.finish();
+  initMap() {
+    let latLng = new google.maps.LatLng(40.7128, -74.0060);
+    let mapOptions = {
+      center: latLng,
+      zoom: 12,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    }
+
+    this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
+  }
+
+  showStops() {
+    if(this.showMap){
+      if(this.stopStatus == 'pending'){
+        for(var i = 0; i < this.completedMarkers.length; i++){
+          this.completedMarkers[i].setMap(null);
+        }
+        this.completedMarkers = [];
+        this.pendingStops.forEach(stop => {
+          this.maps.getCode(stop.address).subscribe(val=>{
+            var latLng = val.json().results[0].geometry.location;
+            var marker = new google.maps.Marker({
+              position: latLng,
+              map: this.map
+            });
+            this.pendingMarkers.push(marker);
+          }, 
+          err => { console.log(err)}, 
+          () => {
+            console.log('got Address');
+          })
+        })
+      } else if(this.stopStatus == 'completed'){
+        for(var i = 0; i < this.pendingMarkers.length; i++){
+          this.pendingMarkers[i].setMap(null);
+        }
+        this.pendingMarkers = [];
+        this.completedStops.forEach(stop => {
+          this.maps.getCode(stop.address).subscribe(val=>{
+            var latLng = val.json().results[0].geometry.location;
+            var marker = new google.maps.Marker({
+              position: latLng,
+              map: this.map
+            });
+            this.completedMarkers.push(marker);
+          }, 
+          err => { console.log(err)}, 
+          () => {
+            console.log('got Address');
+          })
+        })
       }
-    ); 
+    }
+  }
 
-    // start recording location
-    this.backgroundGeolocation.start();
+  startTrip(stop){
+    let modal = this.modalCtrl.create(StartPage, stop);
+    modal.present();
+  }
 
-    // If you wish to turn OFF background-tracking, call the #stop method.
-    this.backgroundGeolocation.stop();
-  } 
 }

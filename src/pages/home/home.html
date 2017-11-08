@@ -10,10 +10,10 @@
   <ion-toolbar>
     <div>
       <ion-segment [(ngModel)]="stopStatus">
-        <ion-segment-button value="pending">
+        <ion-segment-button value="pending" (click)="showStops()">
           Pending
         </ion-segment-button>
-        <ion-segment-button value="completed">
+        <ion-segment-button value="completed" (click)="showStops()">
           Completed
         </ion-segment-button>
       </ion-segment>
@@ -21,24 +21,32 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content>
     <div *ngIf="showList">
       <div [ngSwitch]="stopStatus">
 
         <ion-list *ngSwitchCase="'pending'">
-          <ion-item *ngFor="let stop of pendingStops">
+          <ion-item *ngFor="let stop of pendingStops" (click)="startTrip(stop)">
             <ion-avatar item-start>
-              {{ stop.type }}
+              <div class="icon-wrapper">
+                <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
+                <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
+                 <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
+               </div>
             </ion-avatar>
             <h2>{{ stop.address }}</h2>
             <h3>{{ stop.size }}</h3>
           </ion-item>  
         </ion-list>
 
-        <ion-list *ngSwitchCase="'pending'">
+        <ion-list *ngSwitchCase="'completed'">
           <ion-item *ngFor="let stop of completedStops">
             <ion-avatar item-start>
-              {{ stop.type }}
+              <div class="icon-wrapper">
+                <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
+                <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
+                 <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
+               </div>
             </ion-avatar>
             <h2>{{ stop.address }}</h2>
             <h3>{{ stop.size }}</h3>
@@ -47,7 +55,8 @@
 
       </div>
     </div>
-    <div *ngIf="showMap">
-      <div #map id="map" style="height: 100%;"></div>
+
+    <div [ngClass]="{'hidden': showList }">
+      <div #map id="map"></div>
     </div>
 </ion-content>
