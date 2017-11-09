@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, NavParams, ViewController } from 'ionic-angular';
+import { NavController, NavParams, ViewController, LoadingController } from 'ionic-angular';
 import { GoogleMaps, GoogleMap } from '@ionic-native/google-maps';
 import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -18,9 +18,17 @@ export class StartPage {
 
   public user: Driver;
   public duration: any;
+  public loading: any;
 
   @ViewChild('map') mapElement;
-  map: any;
+  @ViewChild('directionsPanel') directionsPanel;
+  public map: any;
+  public directionsDisplay: any;
+  public notStarted = true;
+  public directions: any;
+  public currentStop: any;
+  public directionSteps: any;
+  public curLocation: any;
 
   constructor( 
     public viewCtrl: ViewController,
@@ -29,7 +37,8 @@ export class StartPage {
     public storage: Storage, 
     public drivers: DriversProvider, 
     public maps: MapsProvider,
-    private geolocation: Geolocation) {
+    private geolocation: Geolocation,
+    public loadingCtrl: LoadingController) {
 
     this.storage.get('user').then((val) => {
       this.user = val;
@@ -41,6 +50,12 @@ export class StartPage {
   }
 
   initMap() {
+    // display loader 
+    this.loading = this.loadingCtrl.create({
+      content: 'Loading route...'
+    });
+    this.loading.present();
+
     let latLng = new google.maps.LatLng(40.7128, -74.0060);
     let mapOptions = {
       center: latLng,
@@ -57,19 +72,22 @@ export class StartPage {
 
   loadRoute() {
     let directionsService = new google.maps.DirectionsService;
-    let directionsDisplay = new google.maps.DirectionsRenderer;
+    this.directionsDisplay = new google.maps.DirectionsRenderer;
 
-    directionsDisplay.setMap(this.map);
+    this.directionsDisplay.setMap(this.map);
 
     this.geolocation.getCurrentPosition().then((resp) => {
+      this.curLocation = resp;
       directionsService.route({
         origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
         destination: this.params.data.address,
         travelMode: google.maps.TravelMode['DRIVING']
       }, (res, status) => {
+        this.loading.dismiss();
         if(status == google.maps.DirectionsStatus.OK){
+          this.directions = res;
           this.duration = res.routes[0].legs[0].duration.text;
-          directionsDisplay.setDirections(res);
+          this.directionsDisplay.setDirections(res);
         } else {
           console.warn(status);
         }
@@ -80,7 +98,47 @@ export class StartPage {
   }
 
   startTrip() {
-    this.navCtrl.push(MapPage, {stop: this.params.data});
+    // start interval counter
+    // show directions on bottom
+    this.notStarted = false;
+    this.directionSteps = this.directions.routes[0].legs[0].steps;
+    this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
+    this.map.setZoom(20);
+
+    let counter = setInterval(() => {
+      this.refreshRoute();
+    }, 3000);
+  }
+
+  refreshRoute() {
+    let directionsService = new google.maps.DirectionsService;
+    this.directionsDisplay = new google.maps.DirectionsRenderer;
+    this.directionsDisplay.setMap(this.map);
+
+    this.geolocation.getCurrentPosition().then((resp) => {
+      this.curLocation = resp;
+      directionsService.route({
+        origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
+        destination: this.params.data.address,
+        travelMode: google.maps.TravelMode['DRIVING']
+      }, (res, status) => {
+        this.loading.dismiss();
+        this.directionsDisplay.setMap(null);
+        if(status == google.maps.DirectionsStatus.OK){
+          this.directions = res;
+          this.duration = res.routes[0].legs[0].duration.text;
+          this.directionsDisplay.setDirections(res);
+        } else {
+          console.warn(status);
+        }
+      })
+    }).catch((error) => {
+      console.log('Error getting location', error);
+    });
+
+    this.directionSteps = this.directions.routes[0].legs[0].steps;
+    this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
+    this.map.setZoom(20);
   }
 
   dismiss() {

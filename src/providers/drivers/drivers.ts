@@ -20,6 +20,10 @@ export class DriversProvider {
     return user;
   }
 
+  testDriver(){
+    return 'hey';
+  }
+
   getStopsByDate(driverId, date) {
     return this.http.post(this.baseUrl + `/fetch-stops-by-date.php`, {id: driverId, date: date}); 
   }

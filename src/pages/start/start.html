@@ -13,18 +13,29 @@
 </ion-header>
 
 <ion-content>
-  <div #map id="map"></div>
+  <div #map id="map" [ngClass]="{'started': !notStarted}"></div>
   <div padding>
-    <h4>{{ duration }}</h4>
-    <h6>{{ params.data.address }}</h6>
-    <p no-margin>{{ params.data.size }} yards | <span *ngIf="params.data.type == 'do'">{{ "Drop Off" }}</span><span *ngIf="params.data.type == 'pu'">{{ "Pick Up" }}</span><span *ngIf="params.data.type == 'sw'">{{ "Switch" }}</span></p>
-    <ion-grid padding>
-      <ion-row>
-        <ion-col col-12>
-          <button ion-button outline style="width: 100%" (click)="startTrip()">Start Trip</button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <div #directionsPanel>
+      <div *ngIf="!notStarted">
+        <div>
+            <span class="distance">{{ directionSteps[0].distance.text }}</span>
+            <span class="time">{{ directionSteps[0].duration.text }}</span>
+        </div>
+        <p [innerHTML]="directionSteps[0].instructions"></p>        
+      </div>
+    </div>
+    <div *ngIf="notStarted">
+      <h4>{{ duration }}</h4>
+      <h6>{{ params.data.address }}</h6>
+      <p no-margin>{{ params.data.size }} yards | <span *ngIf="params.data.type == 'do'">{{ "Drop Off" }}</span><span *ngIf="params.data.type == 'pu'">{{ "Pick Up" }}</span><span *ngIf="params.data.type == 'sw'">{{ "Switch" }}</span></p>
+      <ion-grid padding>
+        <ion-row>
+          <ion-col col-12>
+            <button ion-button outline style="width: 100%" (click)="startTrip()">Start Trip</button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
   </div>
 </ion-content>
 

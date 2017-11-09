@@ -1,4 +1,11 @@
-page-start #map {
-  width: 100vw;
-  height: calc(100vh - 275px);
+page-start{
+  #map {
+    width: 100vw;
+    height: calc(100vh - 275px);
+
+    transition: .5s;
+  }
+  #map.started{
+    height: calc(100vh - 200px);
+  }
 }

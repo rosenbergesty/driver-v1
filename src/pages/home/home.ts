@@ -38,7 +38,7 @@ export class HomePage {
   public fetchStops(){
     var id = this.user.ID;
     var date = new Date();
-    var today = date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    var today = (date.getDate() - 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 
     // Get today's stops
     this.drivers.getStopsByDate(id, today).subscribe(
@@ -135,8 +135,9 @@ export class HomePage {
   }
 
   startTrip(stop){
-    let modal = this.modalCtrl.create(StartPage, stop);
-    modal.present();
+    // let modal = this.modalCtrl.create(StartPage, stop);
+    // modal.present();
+    this.navCtrl.push(StartPage, stop);
   }
 
 }
