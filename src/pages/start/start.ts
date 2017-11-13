@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, NavParams, ViewController, LoadingController } from 'ionic-angular';
+import { NavController, NavParams, ViewController, LoadingController, AlertController } from 'ionic-angular';
 import { GoogleMaps, GoogleMap } from '@ionic-native/google-maps';
 import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -38,7 +38,8 @@ export class StartPage {
     public drivers: DriversProvider, 
     public maps: MapsProvider,
     private geolocation: Geolocation,
-    public loadingCtrl: LoadingController) {
+    public loadingCtrl: LoadingController,
+    public alertCtrl: AlertController) {
 
     this.storage.get('user').then((val) => {
       this.user = val;
@@ -76,7 +77,7 @@ export class StartPage {
 
     this.directionsDisplay.setMap(this.map);
 
-    this.geolocation.getCurrentPosition().then((resp) => {
+    this.geolocation.getCurrentPosition({enableHighAccuracy: true}).then((resp) => {
       this.curLocation = resp;
       directionsService.route({
         origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
@@ -94,6 +95,14 @@ export class StartPage {
       })
     }).catch((error) => {
       console.log('Error getting location', error);
+      this.loading.dismiss();
+      this.viewCtrl.dismiss();
+      let alert = this.alertCtrl.create({
+        title: 'Location Error',
+        subTitle: 'Can\'t get current location. Check your location services and app permissions.',
+        buttons: ['Dismiss']
+      });
+      alert.present();
     });
   }
 
@@ -106,8 +115,9 @@ export class StartPage {
     this.map.setZoom(20);
 
     let counter = setInterval(() => {
+      // this.checkLocation();
       this.refreshRoute();
-    }, 3000);
+    }, 5000);
   }
 
   refreshRoute() {
@@ -123,6 +133,7 @@ export class StartPage {
         travelMode: google.maps.TravelMode['DRIVING']
       }, (res, status) => {
         this.loading.dismiss();
+        console.log(res);
         this.directionsDisplay.setMap(null);
         if(status == google.maps.DirectionsStatus.OK){
           this.directions = res;
@@ -133,7 +144,15 @@ export class StartPage {
         }
       })
     }).catch((error) => {
-      console.log('Error getting location', error);
+      this.loading.dismiss();
+      this.viewCtrl.dismiss();
+      let alert = this.alertCtrl.create({
+        title: 'Location Error',
+        subTitle: 'Can\'t get current location. Check your location services and app permissions.',
+        buttons: ['Dismiss']
+      });
+      alert.present();
+
     });
 
     this.directionSteps = this.directions.routes[0].legs[0].steps;
@@ -141,8 +160,44 @@ export class StartPage {
     this.map.setZoom(20);
   }
 
+  // checkLocation(){
+  //   this.geolocation.getCurrentPosition().then((resp) => {
+  //     var curLatLng = resp.coords;
+
+  //     this.maps.getCode(this.params.data.address).subscribe(val=>{
+  //       var latLng = val.json().results[0].geometry.location;
+  //       var distance = this.distance(curLatLng.latitude, curLatLng.longitude, latLng.lat, latLng.lng);
+  //       console.log(distance);
+  //     }, 
+  //     err => { console.log(err)}, 
+  //     () => {
+  //     })
+
+  //   }).catch((error) => {
+  //     this.viewCtrl.dismiss();
+  //     let alert = this.alertCtrl.create({
+  //       title: 'Location Error',
+  //       subTitle: 'Can\'t get current location. Check your location services and app permissions.',
+  //       buttons: ['Dismiss']
+  //     });
+  //     alert.present();
+  //   });
+  // }
+
+  // distance(lat1, lon1, lat2, lon2) {
+  //   var radlat1 = Math.PI * lat1/180;
+  //   var radlat2 = Math.PI * lat2/180;
+  //   var theta = lon1-lon2;
+  //   var radtheta = Math.PI * theta/180;
+  //   var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);;
+  //   dist = Math.acos(dist);
+  //   dist = dist * 180/Math.PI;
+  //   dist = dist * 60 * 1.1515;
+  //   return dist;
+  // }
+
   dismiss() {
-    this.viewCtrl.dismiss();
+   this.viewCtrl.dismiss();
   }
 
 }
