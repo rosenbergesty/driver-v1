@@ -1,0 +1,58 @@
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Complete Stop</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card>
+    <ion-card-header>
+      {{ stop.address }}
+    </ion-card-header>
+
+    <ion-card-content>
+      <p>{{ stop.size }} yard</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      Drop Details
+    </ion-card-header>
+    <ion-list>
+      <ion-item>
+        <ion-label stacked>Container Number</ion-label>
+        <ion-input type="text"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label stacked>Comments</ion-label>
+        <ion-input type="text"></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-label stacked padding>Signature</ion-label>
+    <signature-pad [options]="signaturePadOptions"  id="signatureCanvas"></signature-pad>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      Pickup Details
+    </ion-card-header>
+    <ion-list>
+      <ion-item>
+        <ion-label stacked>Container Number</ion-label>
+        <ion-input type="text"></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-label stacked padding>Image</ion-label>
+    <div (click)="takePicture()" id="image-box">
+      <img [src]="image" *ngIf="image" />
+    </div>
+  </ion-card>
+
+  <div padding>
+    <button ion-button center block (click)="save()">Submit</button>
+  </div>
+</ion-content>

@@ -26,17 +26,26 @@
       <div [ngSwitch]="stopStatus">
 
         <ion-list *ngSwitchCase="'pending'">
-          <ion-item *ngFor="let stop of pendingStops" (click)="startTrip(stop)">
-            <ion-avatar item-start>
-              <div class="icon-wrapper">
-                <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
-                <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
-                 <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
-               </div>
-            </ion-avatar>
-            <h2>{{ stop.address }}</h2>
-            <h3>{{ stop.size }}</h3>
-          </ion-item>  
+          <ion-item-sliding *ngFor="let stop of pendingStops">
+            <ion-item (click)="startTrip(stop)">
+              <ion-avatar item-start>
+                <div class="icon-wrapper">
+                  <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
+                  <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
+                   <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
+                 </div>
+              </ion-avatar>
+              <h2>{{ stop.address }}</h2>
+              <h3>{{ stop.size }}</h3>
+            </ion-item>  
+
+            <ion-item-options side="right">
+              <button ion-button (click)="complete(stop)">
+                <ion-icon name="done-all"></ion-icon>
+                Complete
+              </button>
+            </ion-item-options>
+          </ion-item-sliding>
         </ion-list>
 
         <ion-list *ngSwitchCase="'completed'">

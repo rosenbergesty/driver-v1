@@ -6,6 +6,9 @@ import { Driver } from '../../models/driver';
 import { DriversProvider } from '../../providers/drivers/drivers';
 import { MapsProvider } from '../../providers/maps/maps';
 import { StartPage } from '../start/start';
+import { DropPage } from '../drop/drop';
+import { PickupPage } from '../pickup/pickup';
+import { SwitchPage } from '../switch/switch';
 
 @Component({
   selector: 'page-home',
@@ -38,7 +41,7 @@ export class HomePage {
   public fetchStops(){
     var id = this.user.ID;
     var date = new Date();
-    var today = (date.getDate() - 5) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    var today = (date.getDate() - 6) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 
     // Get today's stops
     this.drivers.getStopsByDate(id, today).subscribe(
@@ -138,6 +141,22 @@ export class HomePage {
     // let modal = this.modalCtrl.create(StartPage, stop);
     // modal.present();
     this.navCtrl.push(StartPage, stop);
+  }
+
+  complete(stop){
+    var location: any;
+    switch(stop.type){
+      case 'do': 
+        location = DropPage;
+        break;
+      case 'pu':
+        location = PickupPage;
+        break;
+      case 'sw':
+        location = SwitchPage;
+        break;
+    }
+    this.navCtrl.push(location, stop);
   }
 
 }

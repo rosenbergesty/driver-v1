@@ -9,6 +9,10 @@ import { DriversProvider } from '../../providers/drivers/drivers';
 import { MapsProvider } from '../../providers/maps/maps';
 import { MapPage } from '../map/map';
 
+// import { PickupPage } from '../pickup/pickup';
+import { DropPage } from '../drop/drop';
+// import { SwitchPage } from '../pickup/pickup';
+
 @Component({
   selector: 'page-start',
   templateUrl: 'start.html',
@@ -29,6 +33,7 @@ export class StartPage {
   public currentStop: any;
   public directionSteps: any;
   public curLocation: any;
+  public counter: any;
 
   constructor( 
     public viewCtrl: ViewController,
@@ -114,10 +119,10 @@ export class StartPage {
     this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
     this.map.setZoom(20);
 
-    let counter = setInterval(() => {
+    this.counter = setInterval(() => {
       // this.checkLocation();
       this.refreshRoute();
-    }, 5000);
+    }, 3000);
   }
 
   refreshRoute() {
@@ -134,13 +139,31 @@ export class StartPage {
       }, (res, status) => {
         this.loading.dismiss();
         console.log(res);
-        this.directionsDisplay.setMap(null);
-        if(status == google.maps.DirectionsStatus.OK){
-          this.directions = res;
-          this.duration = res.routes[0].legs[0].duration.text;
-          this.directionsDisplay.setDirections(res);
+        if(res.routes[0].legs[0].distance.value < 41){
+          clearInterval(this.counter);
+          var type = this.params.data.type;
+          var location: any;
+          switch(type){
+            case 'do':
+              location = DropPage;
+              break;
+            case 'pu':
+              // location = PickupPage;
+              break;
+            case 'sw':
+              // location = SwitchPage;
+              break;
+          }
+          this.navCtrl.push(location, this.params.data);
         } else {
-          console.warn(status);
+          this.directionsDisplay.setMap(null);
+          if(status == google.maps.DirectionsStatus.OK){
+            this.directions = res;
+            this.duration = res.routes[0].legs[0].duration.text;
+            this.directionsDisplay.setDirections(res);
+          } else {
+            console.warn(status);
+          } 
         }
       })
     }).catch((error) => {
@@ -159,42 +182,6 @@ export class StartPage {
     this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
     this.map.setZoom(20);
   }
-
-  // checkLocation(){
-  //   this.geolocation.getCurrentPosition().then((resp) => {
-  //     var curLatLng = resp.coords;
-
-  //     this.maps.getCode(this.params.data.address).subscribe(val=>{
-  //       var latLng = val.json().results[0].geometry.location;
-  //       var distance = this.distance(curLatLng.latitude, curLatLng.longitude, latLng.lat, latLng.lng);
-  //       console.log(distance);
-  //     }, 
-  //     err => { console.log(err)}, 
-  //     () => {
-  //     })
-
-  //   }).catch((error) => {
-  //     this.viewCtrl.dismiss();
-  //     let alert = this.alertCtrl.create({
-  //       title: 'Location Error',
-  //       subTitle: 'Can\'t get current location. Check your location services and app permissions.',
-  //       buttons: ['Dismiss']
-  //     });
-  //     alert.present();
-  //   });
-  // }
-
-  // distance(lat1, lon1, lat2, lon2) {
-  //   var radlat1 = Math.PI * lat1/180;
-  //   var radlat2 = Math.PI * lat2/180;
-  //   var theta = lon1-lon2;
-  //   var radtheta = Math.PI * theta/180;
-  //   var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);;
-  //   dist = Math.acos(dist);
-  //   dist = dist * 180/Math.PI;
-  //   dist = dist * 60 * 1.1515;
-  //   return dist;
-  // }
 
   dismiss() {
    this.viewCtrl.dismiss();

@@ -6,6 +6,8 @@ import { MyApp } from './app.component';
 import { IonicStorageModule } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Network } from '@ionic-native/network';
+import { Camera } from '@ionic-native/camera';
+import { SignaturePadModule } from 'angular2-signaturepad';
 
 import { AboutPage } from '../pages/about/about';
 import { ContactPage } from '../pages/contact/contact';
@@ -14,6 +16,9 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { LoginPage } from '../pages/login/login';
 import { StartPage } from '../pages/start/start';
 import { MapPage } from '../pages/map/map';
+import { DropPage } from '../pages/drop/drop';
+import { PickupPage } from '../pages/pickup/pickup';
+import { SwitchPage } from '../pages/switch/switch';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -28,7 +33,10 @@ import { DriversProvider } from '../providers/drivers/drivers';
     TabsPage,
     LoginPage,
     StartPage,
-    MapPage
+    MapPage,
+    DropPage,
+    PickupPage,
+    SwitchPage
   ],
   imports: [
     BrowserModule,
@@ -36,7 +44,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
       tabsHideOnSubPages: true
     }),
     IonicStorageModule.forRoot(),
-    HttpModule
+    HttpModule, 
+    SignaturePadModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -47,7 +56,10 @@ import { DriversProvider } from '../providers/drivers/drivers';
     TabsPage,
     LoginPage,
     StartPage,
-    MapPage
+    MapPage,
+    DropPage,
+    PickupPage,
+    SwitchPage
   ],
   providers: [
     StatusBar,
@@ -55,7 +67,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     DriversProvider,
     Geolocation,
-    Network
+    Network, 
+    Camera
   ]
 })
 export class AppModule {}
