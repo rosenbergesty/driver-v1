@@ -41,12 +41,11 @@ export class HomePage {
   public fetchStops(){
     var id = this.user.ID;
     var date = new Date();
-    var today = (date.getDate() - 6) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    var today = (date.getDate() - 7) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 
     // Get today's stops
     this.drivers.getStopsByDate(id, today).subscribe(
       data => {
-        console.log(data.json());
         var resp = data.json();
         if(resp == '0 results'){
           // No results
@@ -138,8 +137,6 @@ export class HomePage {
   }
 
   startTrip(stop){
-    // let modal = this.modalCtrl.create(StartPage, stop);
-    // modal.present();
     this.navCtrl.push(StartPage, stop);
   }
 

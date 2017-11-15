@@ -19,6 +19,7 @@ import { MapPage } from '../pages/map/map';
 import { DropPage } from '../pages/drop/drop';
 import { PickupPage } from '../pages/pickup/pickup';
 import { SwitchPage } from '../pages/switch/switch';
+import { DirectionsPage } from '../pages/directions/directions';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -36,7 +37,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
     MapPage,
     DropPage,
     PickupPage,
-    SwitchPage
+    SwitchPage,
+    DirectionsPage
   ],
   imports: [
     BrowserModule,
@@ -59,7 +61,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
     MapPage,
     DropPage,
     PickupPage,
-    SwitchPage
+    SwitchPage,
+    DirectionsPage
   ],
   providers: [
     StatusBar,

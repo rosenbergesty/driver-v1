@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, NavParams, ViewController, LoadingController, AlertController } from 'ionic-angular';
+import { NavController, NavParams, ViewController, LoadingController, AlertController, ModalController } from 'ionic-angular';
 import { GoogleMaps, GoogleMap } from '@ionic-native/google-maps';
 import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -9,9 +9,10 @@ import { DriversProvider } from '../../providers/drivers/drivers';
 import { MapsProvider } from '../../providers/maps/maps';
 import { MapPage } from '../map/map';
 
-// import { PickupPage } from '../pickup/pickup';
+import { PickupPage } from '../pickup/pickup';
 import { DropPage } from '../drop/drop';
-// import { SwitchPage } from '../pickup/pickup';
+import { SwitchPage } from '../switch/switch';
+import { DirectionsPage } from '../directions/directions';
 
 @Component({
   selector: 'page-start',
@@ -23,6 +24,7 @@ export class StartPage {
   public user: Driver;
   public duration: any;
   public loading: any;
+  public durationValue: any;
 
   @ViewChild('map') mapElement;
   @ViewChild('directionsPanel') directionsPanel;
@@ -44,7 +46,8 @@ export class StartPage {
     public maps: MapsProvider,
     private geolocation: Geolocation,
     public loadingCtrl: LoadingController,
-    public alertCtrl: AlertController) {
+    public alertCtrl: AlertController,
+    public modalCtrl: ModalController) {
 
     this.storage.get('user').then((val) => {
       this.user = val;
@@ -71,8 +74,6 @@ export class StartPage {
 
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-    console.log(this.params.data);
-
     this.loadRoute();
   }
 
@@ -93,6 +94,7 @@ export class StartPage {
         if(status == google.maps.DirectionsStatus.OK){
           this.directions = res;
           this.duration = res.routes[0].legs[0].duration.text;
+          this.durationValue = res.routes[0].legs[0].duration.value;
           this.directionsDisplay.setDirections(res);
         } else {
           console.warn(status);
@@ -112,17 +114,40 @@ export class StartPage {
   }
 
   startTrip() {
-    // start interval counter
-    // show directions on bottom
+    // Save eta and start time
+    var dateObj = Date.now();
+    dateObj += 1000 * this.durationValue;
+    var etaDate = new Date(dateObj);
+    var eta = etaDate.getHours() + ':' + etaDate.getMinutes();
+
+    var timeDate = new Date();
+    var time = (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
+
+    this.drivers.startStop(this.params.data.ID, eta, time).subscribe(
+      data => {
+        console.log(data.json());
+      },
+      err => {
+        console.log(err.json());
+      },
+      () => {
+        console.log('started stops');
+      }
+    );
+
     this.notStarted = false;
     this.directionSteps = this.directions.routes[0].legs[0].steps;
     this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
     this.map.setZoom(20);
 
     this.counter = setInterval(() => {
-      // this.checkLocation();
       this.refreshRoute();
     }, 3000);
+  }
+
+  listDirections() {
+    let modal = this.modalCtrl.create(DirectionsPage, {steps: this.directionSteps});;
+    modal.present();
   }
 
   refreshRoute() {
@@ -138,27 +163,16 @@ export class StartPage {
         travelMode: google.maps.TravelMode['DRIVING']
       }, (res, status) => {
         this.loading.dismiss();
-        console.log(res);
         if(res.routes[0].legs[0].distance.value < 41){
-          clearInterval(this.counter);
-          var type = this.params.data.type;
-          var location: any;
-          switch(type){
-            case 'do':
-              location = DropPage;
-              break;
-            case 'pu':
-              // location = PickupPage;
-              break;
-            case 'sw':
-              // location = SwitchPage;
-              break;
+          if(this.notStarted == false){
+            clearInterval(this.counter);
+            this.complete();
           }
-          this.navCtrl.push(location, this.params.data);
         } else {
           this.directionsDisplay.setMap(null);
           if(status == google.maps.DirectionsStatus.OK){
             this.directions = res;
+            this.directionSteps = res.routes[0].legs;
             this.duration = res.routes[0].legs[0].duration.text;
             this.directionsDisplay.setDirections(res);
           } else {
@@ -183,8 +197,47 @@ export class StartPage {
     this.map.setZoom(20);
   }
 
+  complete() {
+    this.notStarted = true;
+    var timeDate = new Date();
+    var time =  (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
+    this.drivers.completeStop(this.params.data.ID, time).subscribe(
+      data=>{
+        console.log(data.json());
+      }, err=>{
+        console.log(err.json());
+      }, ()=>{
+
+      }
+    );
+    var type = this.params.data.type;
+    var location: any;
+    switch(type){
+      case 'do':
+        location = DropPage;
+        break;
+      case 'pu':
+        location = PickupPage;
+        break;
+      case 'sw':
+        location = SwitchPage;
+        break;
+    }
+    this.navCtrl.push(location, this.params.data);
+  }
+
   dismiss() {
-   this.viewCtrl.dismiss();
+    this.drivers.cancelStop(this.params.data.ID).subscribe(
+      data => {
+        console.log(data.json());
+      },
+      err => {
+        console.log(err.json())
+      },
+      () => {
+        console.log('cancelled stop');
+      });
+    this.viewCtrl.dismiss();
   }
 
 }

@@ -20,11 +20,23 @@ export class DriversProvider {
     return user;
   }
 
-  testDriver(){
-    return 'hey';
-  }
-
   getStopsByDate(driverId, date) {
     return this.http.post(this.baseUrl + `/fetch-stops-by-date.php`, {id: driverId, date: date}); 
+  }
+
+  startStop(id, eta, time){
+    return this.http.post(this.baseUrl + `/start-stop.php`, {id: id, eta: eta, start: time});
+  }
+
+  cancelStop(id){
+    return this.http.post(this.baseUrl + `/cancel-stop.php`, {id: id});
+  }
+
+  completeStop(id, time){
+    return this.http.post(this.baseUrl + `/complete-stop.php`, {id: id, time: time});
+  }
+
+  saveDrop(id, time, date, containerNumber, comments, signature) {
+    return this.http.post(this.baseUrl + `/save-drop.php`, {id: id, time: time, date: date, container: containerNumber, comments: comments, signature: signature});
   }
 }

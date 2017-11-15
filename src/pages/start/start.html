@@ -21,13 +21,15 @@
             <span class="distance">{{ directionSteps[0].distance.text }}</span>
             <span class="time">{{ directionSteps[0].duration.text }}</span>
         </div>
-        <p [innerHTML]="directionSteps[0].instructions"></p>        
+        <p [innerHTML]="directionSteps[0].instructions"></p>     
+        <button ion-button end outline small icon-only (click)="listDirections()"><ion-icon name="more"></ion-icon></button>   
       </div>
     </div>
     <div *ngIf="notStarted">
       <h4>{{ duration }}</h4>
       <h6>{{ params.data.address }}</h6>
       <p no-margin>{{ params.data.size }} yards | <span *ngIf="params.data.type == 'do'">{{ "Drop Off" }}</span><span *ngIf="params.data.type == 'pu'">{{ "Pick Up" }}</span><span *ngIf="params.data.type == 'sw'">{{ "Switch" }}</span></p>
+      <p>{{ params.data.comment }}</p>
       <ion-grid padding>
         <ion-row>
           <ion-col col-12>
