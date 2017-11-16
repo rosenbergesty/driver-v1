@@ -41,7 +41,7 @@ export class HomePage {
   public fetchStops(){
     var id = this.user.ID;
     var date = new Date();
-    var today = (date.getDate() - 7) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    var today = (date.getDate() - 8) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 
     // Get today's stops
     this.drivers.getStopsByDate(id, today).subscribe(

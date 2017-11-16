@@ -39,4 +39,8 @@ export class DriversProvider {
   saveDrop(id, time, date, containerNumber, comments, signature) {
     return this.http.post(this.baseUrl + `/save-drop.php`, {id: id, time: time, date: date, container: containerNumber, comments: comments, signature: signature});
   }
+
+  savePickup(id, time, date, containerNumber, pic) {
+    return this.http.post(this.baseUrl + `/save-pickup.php`, {id: id, time: time, date: date, container: containerNumber, pic: pic});
+  }
 }

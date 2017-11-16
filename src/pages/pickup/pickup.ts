@@ -2,7 +2,11 @@ import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { Camera, CameraOptions } from '@ionic-native/camera';
 
+import * as firebase from 'firebase';
+import { environment } from '../../environments/environment';
+
 import { Stop } from '../../models/stop';
+import { DriversProvider } from '../../providers/drivers/drivers';
 
 
 /**
@@ -20,11 +24,14 @@ import { Stop } from '../../models/stop';
 export class PickupPage {
   public stop: Stop;
   public image: String;
+  public containerNumber: any;
 
   constructor(public navCtrl: NavController, 
-    public navParams: NavParams, public camera: Camera) {
+    public navParams: NavParams, public camera: Camera, 
+    public drivers: DriversProvider) {
     this.stop = new Stop();
     this.stop.address = '';
+    firebase.initializeApp(environment.firebase);
   }
 
   ionViewDidLoad() {
@@ -45,8 +52,44 @@ export class PickupPage {
     })
   }
 
-  save() {
-    
+  dataURItoBlob(dataURI) {
+    let binary = atob(dataURI.split(',')[1]);
+    let array = [];
+    for (let i = 0; i < binary.length; i++){
+      array.push(binary.charCodeAt(i));
+    }
+    return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
   }
+
+  save() {
+    // Signature
+    let img = this.dataURItoBlob(this.image);
+    var uploadTask = firebase.storage().ref().child('images/img-'+this.stop.ID+'.png').put(img);
+    uploadTask.then(this.onSuccess, this.onError);
+
+    // Save Stop
+    var timeDate = new Date();
+    var time = (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
+    var date = timeDate.getDate() + '/' + timeDate.getMonth() + '/' + timeDate.getFullYear();
+
+    this.drivers.savePickup(this.stop.ID, time, date, this.containerNumber, 'images/img-'+this.stop.ID+'.png').subscribe(
+      data => {
+        // console.log(data.json());
+        console.log('successful save');
+      }, err => {
+        console.log(JSON.stringify(err));
+        console.log('error save');
+      }, () => {
+        console.log('saved.');
+      });
+  }
+
+  onSuccess = (snapshot) => {
+    console.log(snapshot);
+  }
+  onError = (error) => {
+    console.log('error', error);
+  }
+
 
 }
