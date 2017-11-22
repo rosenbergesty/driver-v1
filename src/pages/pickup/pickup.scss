@@ -3,5 +3,21 @@ page-pickup {
     min-width: 100%;
     min-height: 200px;
     background: #FDFDFD;
+    padding-top: 0;
+  }
+  ion-icon{
+    font-size: 4em;
+    color: #AAAAAA;
+  }
+  .camera-button{
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    background: #ECECEC;
+    text-align: center;
+    padding-top: 40px;
+  }
+  .list-ios > .item-block:first-child{
+    border-top: none;
   }
 }

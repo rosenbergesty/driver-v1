@@ -41,14 +41,15 @@ export class HomePage {
   public fetchStops(){
     var id = this.user.ID;
     var date = new Date();
-    var today = (date.getDate() - 8) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    var today = date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 
+    console.log(id);
     // Get today's stops
     this.drivers.getStopsByDate(id, today).subscribe(
       data => {
         var resp = data.json();
         if(resp == '0 results'){
-          // No results
+          console.log('No results');
         } else {
           resp.forEach(stop =>{
             if(stop.status == 'pending'){

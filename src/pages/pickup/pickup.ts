@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, AlertController } from 'ionic-angular';
 import { Camera, CameraOptions } from '@ionic-native/camera';
 
 import * as firebase from 'firebase';
@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 
 import { Stop } from '../../models/stop';
 import { DriversProvider } from '../../providers/drivers/drivers';
+import { HomePage } from '../home/home';
 
 
 /**
@@ -28,7 +29,7 @@ export class PickupPage {
 
   constructor(public navCtrl: NavController, 
     public navParams: NavParams, public camera: Camera, 
-    public drivers: DriversProvider) {
+    public drivers: DriversProvider, public alertCtrl: AlertController) {
     this.stop = new Stop();
     this.stop.address = '';
     firebase.initializeApp(environment.firebase);
@@ -62,26 +63,41 @@ export class PickupPage {
   }
 
   save() {
-    // Signature
-    let img = this.dataURItoBlob(this.image);
-    var uploadTask = firebase.storage().ref().child('images/img-'+this.stop.ID+'.png').put(img);
-    uploadTask.then(this.onSuccess, this.onError);
+    if (this.containerNumber && this.image){
+      // Signature
+      let img = this.dataURItoBlob(this.image);
+      var uploadTask = firebase.storage().ref().child('images/img-'+this.stop.ID+'.png').put(img);
+      uploadTask.then(this.onSuccess, this.onError);
 
-    // Save Stop
-    var timeDate = new Date();
-    var time = (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
-    var date = timeDate.getDate() + '/' + timeDate.getMonth() + '/' + timeDate.getFullYear();
+      // Save Stop
+      var timeDate = new Date();
+      var time = (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
+      var date = timeDate.getDate() + '/' + timeDate.getMonth() + '/' + timeDate.getFullYear();
 
-    this.drivers.savePickup(this.stop.ID, time, date, this.containerNumber, 'images/img-'+this.stop.ID+'.png').subscribe(
-      data => {
-        // console.log(data.json());
-        console.log('successful save');
-      }, err => {
-        console.log(JSON.stringify(err));
-        console.log('error save');
-      }, () => {
-        console.log('saved.');
+      this.drivers.savePickup(this.stop.ID, time, date, this.containerNumber, 'images/img-'+this.stop.ID+'.png').subscribe(
+        data => {
+          console.log('successful save');
+          this.navCtrl.push(HomePage);
+        }, err => {
+          console.log(JSON.stringify(err));
+          let alert = this.alertCtrl.create({
+            title: 'Error',
+            subTitle: 'There was an error saving the pickup. Please contact support.',
+            buttons: ['OK']
+          });
+          alert.present();
+        }, () => {
+          console.log('saved.');
+        }); 
+    } else {
+      // Display error
+      let alert = this.alertCtrl.create({
+        title: 'Missing Fields',
+        subTitle: 'Please add container number and image.',
+        buttons: ['OK']
       });
+      alert.present();
+    }
   }
 
   onSuccess = (snapshot) => {

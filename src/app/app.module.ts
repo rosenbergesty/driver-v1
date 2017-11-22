@@ -7,6 +7,8 @@ import { IonicStorageModule } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Network } from '@ionic-native/network';
 import { Camera } from '@ionic-native/camera';
+// import { OneSignal } from '@ionic-native/onesignal';
+
 import { SignaturePadModule } from 'angular2-signaturepad';
 
 import { AboutPage } from '../pages/about/about';
@@ -71,7 +73,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
     DriversProvider,
     Geolocation,
     Network, 
-    Camera
+    Camera,
+    // OneSignal
   ]
 })
 export class AppModule {}

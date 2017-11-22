@@ -22,7 +22,7 @@
     <ion-card-header>
       Drop Details
     </ion-card-header>
-    <ion-list>
+    <ion-list padding-left padding-right>
       <ion-item>
         <ion-label stacked>Container Number</ion-label>
         <ion-input type="text" [(ngModel)]="containerNumber"></ion-input>
@@ -33,7 +33,7 @@
       </ion-item>
     </ion-list>
     <ion-label stacked padding>Signature</ion-label>
-    <signature-pad [options]="signaturePadOptions"  id="signatureCanvas"></signature-pad>
+    <signature-pad [options]="signaturePadOptions"  id="signatureCanvas" padding-left padding-right></signature-pad>
   </ion-card>
 
   <div padding>

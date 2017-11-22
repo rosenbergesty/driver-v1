@@ -1,3 +1,14 @@
 page-drop {
+  .list-ios > .item-block:first-child{
+    border-top: none;
+  }
+  .item-ios{
+    border-bottom: .55px solid #C8C7CC;
+    padding-left: 0;
+  }
 
+  .item-md{
+    border-bottom: 1px solid #dedede;
+    padding-left: 0;
+  }
 }

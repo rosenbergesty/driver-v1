@@ -19,7 +19,11 @@ export class LoginPage {
   public connected: boolean;
   public invalid = false;
 
-  constructor(public navCtrl: NavController, public drivers: DriversProvider, public storage: Storage, private network: Network, public alertCtrl: AlertController){
+  constructor(public navCtrl: NavController, 
+    public drivers: DriversProvider, 
+    public storage: Storage, 
+    private network: Network, 
+    public alertCtrl: AlertController){
     this.storage.get('user').then((val) => {
       console.log(val);
       if(val != null){
@@ -27,6 +31,9 @@ export class LoginPage {
       }
     });
     this.checkNetwork();
+  }
+
+  ionViewDidLoad() {
   }
 
   checkNetwork() {
@@ -55,6 +62,9 @@ export class LoginPage {
           let resp = data.json();
           if(resp.code == 200){
             this.storage.set('user', resp.data[0]);
+            this.storage.get('onesignal-id').then((val) => {
+              // Send device ID and driver ID
+            });
             this.navCtrl.push(TabsPage);
             
           } else if (resp.code == 300){

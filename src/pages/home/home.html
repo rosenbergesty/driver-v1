@@ -35,7 +35,7 @@
                    <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
                  </div>
               </ion-avatar>
-              <h2>{{ stop.address }}</h2>
+              <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
               <h3>{{ stop.size }} yard</h3>
             </ion-item>  
 
@@ -57,7 +57,7 @@
                  <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
                </div>
             </ion-avatar>
-            <h2>{{ stop.address }}</h2>
+            <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
             <h3>{{ stop.size }}</h3>
           </ion-item>  
         </ion-list>
