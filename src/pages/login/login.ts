@@ -62,10 +62,20 @@ export class LoginPage {
           let resp = data.json();
           if(resp.code == 200){
             this.storage.set('user', resp.data[0]);
+            console.log(resp.data[0]);
             this.storage.get('onesignal-id').then((val) => {
-              // Send device ID and driver ID
+              this.drivers.registerDevice(resp.data[0].ID, val).subscribe(
+                data => {
+                  console.log(data.json());
+                  this.navCtrl.push(TabsPage);
+                },
+                err => {
+                  console.log(err.json());
+                },
+                () => {
+                  
+                });
             });
-            this.navCtrl.push(TabsPage);
             
           } else if (resp.code == 300){
             console.log('Wrong Password');

@@ -43,4 +43,8 @@ export class DriversProvider {
   savePickup(id, time, date, containerNumber, pic) {
     return this.http.post(this.baseUrl + `/save-pickup.php`, {id: id, time: time, date: date, container: containerNumber, pic: pic});
   }
+
+  registerDevice(id, deviceId){
+    return this.http.post(this.baseUrl + `/add-device.php`, {id: id, device: deviceId}); 
+  }
 }
