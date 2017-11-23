@@ -67,13 +67,14 @@ export class LoginPage {
               this.drivers.registerDevice(resp.data[0].ID, val).subscribe(
                 data => {
                   console.log(data.json());
+                  
                   this.navCtrl.push(TabsPage);
                 },
                 err => {
                   console.log(err.json());
                 },
                 () => {
-                  
+
                 });
             });
             
