@@ -9,6 +9,7 @@ import { StartPage } from '../start/start';
 import { DropPage } from '../drop/drop';
 import { PickupPage } from '../pickup/pickup';
 import { SwitchPage } from '../switch/switch';
+import { LoginPage } from '../login/login';
 
 @Component({
   selector: 'page-home',
@@ -31,10 +32,17 @@ export class HomePage {
   @ViewChild('map') mapElement;
   map: any;
 
-  constructor( public modalCtrl: ModalController, public navCtrl: NavController, public storage: Storage, public drivers: DriversProvider, public maps: MapsProvider) {
+  constructor( public modalCtrl: ModalController, 
+    public navCtrl: NavController, public storage: Storage, 
+    public drivers: DriversProvider, public maps: MapsProvider) {
     this.storage.get('user').then((val) => {
-      this.user = val;
-      this.fetchStops()
+      console.log(val);
+      if(val != null){
+        this.user = val;
+        this.fetchStops();
+      } else {
+        this.navCtrl.push(LoginPage);
+      }
     });
   }
 
@@ -155,6 +163,14 @@ export class HomePage {
         break;
     }
     this.navCtrl.push(location, stop);
+  }
+
+  // Pull to refresh 
+  refresh(event){
+    this.completedStops = [];
+    this.pendingStops = [];
+    this.fetchStops();
+    event.complete();
   }
 
 }

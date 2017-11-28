@@ -22,34 +22,21 @@
 </ion-header>
 
 <ion-content>
-    <div *ngIf="showList">
-      <div [ngSwitch]="stopStatus">
+  <ion-refresher (ionRefresh)="refresh($event)" enabled="{{showList}}">
+    <ion-refresher-content
+      pullingIcon="arrow-dropdown"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
 
-        <ion-list *ngSwitchCase="'pending'">
-          <ion-item-sliding *ngFor="let stop of pendingStops">
-            <ion-item (click)="startTrip(stop)">
-              <ion-avatar item-start>
-                <div class="icon-wrapper">
-                  <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
-                  <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
-                   <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
-                 </div>
-              </ion-avatar>
-              <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
-              <h3>{{ stop.size }} yard</h3>
-            </ion-item>  
+  <div *ngIf="showList">
+    <div [ngSwitch]="stopStatus">
 
-            <ion-item-options side="right">
-              <button ion-button (click)="complete(stop)">
-                <ion-icon name="done-all"></ion-icon>
-                Complete
-              </button>
-            </ion-item-options>
-          </ion-item-sliding>
-        </ion-list>
-
-        <ion-list *ngSwitchCase="'completed'">
-          <ion-item *ngFor="let stop of completedStops">
+      <ion-list *ngSwitchCase="'pending'">
+        <ion-item-sliding *ngFor="let stop of pendingStops">
+          <ion-item (click)="startTrip(stop)">
             <ion-avatar item-start>
               <div class="icon-wrapper">
                 <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
@@ -58,14 +45,36 @@
                </div>
             </ion-avatar>
             <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
-            <h3>{{ stop.size }}</h3>
+            <h3>{{ stop.size }} yard</h3>
           </ion-item>  
-        </ion-list>
 
-      </div>
-    </div>
+          <ion-item-options side="right">
+            <button ion-button (click)="complete(stop)">
+              <ion-icon name="done-all"></ion-icon>
+              Complete
+            </button>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
 
-    <div [ngClass]="{'hidden': showList }">
-      <div #map id="map"></div>
+      <ion-list *ngSwitchCase="'completed'">
+        <ion-item *ngFor="let stop of completedStops">
+          <ion-avatar item-start>
+            <div class="icon-wrapper">
+              <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
+              <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
+               <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
+             </div>
+          </ion-avatar>
+          <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
+          <h3>{{ stop.size }}</h3>
+        </ion-item>  
+      </ion-list>
+
     </div>
+  </div>
+
+  <div [ngClass]="{'hidden': showList }">
+    <div #map id="map"></div>
+  </div>
 </ion-content>

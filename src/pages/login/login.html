@@ -1,5 +1,5 @@
 <ion-header>  
-  <ion-navbar>
+  <ion-navbar hideBackButton>
     <ion-title>
       Login
     </ion-title>
@@ -24,13 +24,14 @@
           </ion-grid>
         <form (submit)="login()">
           <ion-list>
+            <p *ngIf="invalid" class="error-message">Wrong Login</p>
 
-            <ion-item>
+            <ion-item [ngClass]="{'invalid': invalid}">
               <ion-label stacked>EMAIL</ion-label>
               <ion-input type="email" [(ngModel)]="email" name="email"></ion-input>
             </ion-item>
 
-            <ion-item>
+            <ion-item [ngClass]="{'invalid': invalid}">
               <ion-label stacked>PASSWORD</ion-label>
               <ion-input type="password" [(ngModel)]="password" name="password"></ion-input>
             </ion-item>

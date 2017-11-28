@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, AlertController } from 'ionic-angular';
+import { NavController, AlertController, Platform } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Network } from '@ionic-native/network';
 
@@ -19,8 +19,10 @@ export class LoginPage {
   public connected: boolean;
   public invalid = false;
 
+  public unregisterBackButtonAction: any;ß
+
   constructor(public navCtrl: NavController, 
-    public drivers: DriversProvider, 
+    public drivers: DriversProvider, public platform: Platform,
     public storage: Storage, 
     private network: Network, 
     public alertCtrl: AlertController){
@@ -35,6 +37,23 @@ export class LoginPage {
 
   ionViewDidLoad() {
   }
+
+  // Stop Hardware back button
+  ionViewDidEnter() {
+    this.initializeBackButtonCustomHandler();
+  }
+  ionViewWillLeave() {
+    this.unregisterBackButtonAction && this.unregisterBackButtonAction();
+  }
+  public initializeBackButtonCustomHandler(): void {
+    this.unregisterBackButtonAction = this.platform.registerBackButtonAction(() => {
+      this.customHandleBackButton();
+    }, 10);
+  }
+  private customHandleBackButton(): void {
+
+  }
+
 
   checkNetwork() {
     if(this.network.type != 'none' && this.network.type != 'unknown'){
@@ -62,12 +81,9 @@ export class LoginPage {
           let resp = data.json();
           if(resp.code == 200){
             this.storage.set('user', resp.data[0]);
-            console.log(resp.data[0]);
             this.storage.get('onesignal-id').then((val) => {
               this.drivers.registerDevice(resp.data[0].ID, val).subscribe(
                 data => {
-                  console.log(data.json());
-                  
                   this.navCtrl.push(TabsPage);
                 },
                 err => {
@@ -77,12 +93,9 @@ export class LoginPage {
 
                 });
             });
-            
           } else if (resp.code == 300){
-            console.log('Wrong Password');
             this.invalid = true;
           } else if (resp.code == 400){
-            console.log('Wrong username');
             this.invalid = true;
           }
         },
@@ -93,7 +106,6 @@ export class LoginPage {
         },
         () => console.log('Login complete')
       );
-      console.log('Email: ' + this.email + ' - Pass: ' + this.password);
     } else {
       // Display connection error
       this.presentAlert();

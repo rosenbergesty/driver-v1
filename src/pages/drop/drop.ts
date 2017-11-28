@@ -60,6 +60,15 @@ export class DropPage {
     return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
   }
 
+  dataURItoBlobPDF(dataURI) {
+    let binary = atob(dataURI.split(',')[1]);
+    let array = [];
+    for (let i = 0; i < binary.length; i++){
+      array.push(binary.charCodeAt(i));
+    }
+    return new Blob([new Uint8Array(array)], {type: 'application/pdf'});
+  }
+
   save() {
     // Signature
     this.signature = this.signaturePad.toDataURL();
@@ -74,9 +83,17 @@ export class DropPage {
 
     this.drivers.saveDrop(this.stop.ID, time, date, this.containerNumber, this.comments, 'signatures/signature-'+this.stop.ID+'.png').subscribe(
       data => {
+        console.log('Completed Drop');
+        console.log(JSON.stringify(data));
         console.log(data.json());
+
+        var pdf = data.json().message;
+        firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
+          console.log('Uploaded file');
+        });
+        
       }, err => {
-        console.log(err);
+        console.log(JSON.stringify(err));
       }, () => {
         
       });
