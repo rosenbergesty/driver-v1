@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, AlertController, LoadingController } from 'ionic-angular';
 import { SignaturePad } from 'angular2-signaturepad/signature-pad';
+import { Storage } from '@ionic/storage';
 
 import * as firebase from 'firebase';
 import { environment } from '../../environments/environment';
@@ -36,8 +37,9 @@ export class DropPage {
   };
   public signatureImage: string;
 
-  constructor(public navCtrl: NavController, 
-    public navParams: NavParams, public drivers: DriversProvider) {
+  constructor(public navCtrl: NavController, public loadingCtrl: LoadingController,
+    public navParams: NavParams, public drivers: DriversProvider,
+    public alertCtrl: AlertController, public storage: Storage) {
     this.stop = new Stop();
     this.stop.address = '';
     firebase.initializeApp(environment.firebase);
@@ -70,6 +72,12 @@ export class DropPage {
   }
 
   save() {
+    // Loader 
+    let loading = this.loadingCtrl.create({
+      content: 'Saving drop...'
+    });
+    loading.present();
+
     // Signature
     this.signature = this.signaturePad.toDataURL();
     let sign = this.dataURItoBlob(this.signature);
@@ -81,22 +89,39 @@ export class DropPage {
     var time = (timeDate.getHours()<10?'0':'') + timeDate.getHours() + ':' + (timeDate.getMinutes()<10?'0':'') + timeDate.getMinutes();
     var date = timeDate.getDate() + '/' + timeDate.getMonth() + '/' + timeDate.getFullYear();
 
-    this.drivers.saveDrop(this.stop.ID, time, date, this.containerNumber, this.comments, 'signatures/signature-'+this.stop.ID+'.png').subscribe(
-      data => {
-        console.log('Completed Drop');
-        console.log(JSON.stringify(data));
-        console.log(data.json());
+    this.storage.get('user').then((val) => {
+      var name = val.name;
+      this.drivers.saveDrop(this.stop.ID, time, date, this.containerNumber, this.comments, 'signatures/signature-'+this.stop.ID+'.png', name, 'drop-tickets/drop-'+this.stop.ID+'.pdf', this.stop.address).subscribe(
+        data => {
+          console.log('Completed Drop');
+          console.log(JSON.stringify(data));
+          console.log(data.json());
 
-        var pdf = data.json().message;
-        firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
-          console.log('Uploaded file');
+          if(data.json().code == '200'){
+            var context = this;
+            var pdf = data.json().message;
+            firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
+              console.log('Uploaded file');
+              loading.dismiss();
+              context.goToHome();
+            });
+          } else {
+            // Alert that error
+            loading.dismiss();
+            let alert = this.alertCtrl.create({
+              title: 'Error Saving Drop',
+              subTitle: 'Please try again or contact support',
+              buttons: ['Dismiss']
+            });
+            alert.present();
+          }
+
+        }, err => {
+          console.log(JSON.stringify(err));
+        }, () => {
+          
         });
-        
-      }, err => {
-        console.log(JSON.stringify(err));
-      }, () => {
-        
-      });
+    })
   }
 
   onSuccess = (snapshot) => {
@@ -104,6 +129,10 @@ export class DropPage {
   }
   onError = (error) => {
     console.log('error', error);
+  }
+
+  goToHome(){
+    this.navCtrl.popToRoot();
   }
 
 }

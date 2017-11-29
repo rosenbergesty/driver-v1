@@ -85,6 +85,7 @@ export class StartPage {
 
     this.geolocation.getCurrentPosition({enableHighAccuracy: true}).then((resp) => {
       this.curLocation = resp;
+      console.log(resp);
       directionsService.route({
         origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
         destination: this.params.data.address,

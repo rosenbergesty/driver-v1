@@ -22,7 +22,7 @@ export class MyApp {
       window["plugins"].OneSignal.setLogLevel({logLevel: 6, visualLevel: 0});
 
       var notificationOpenedCallback = function(jsonData) {
-        console.log('notificationOpenedCalback: ' + JSON.stringify(jsonData));
+        
       }
 
       window["plugins"].OneSignal

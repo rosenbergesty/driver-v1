@@ -36,12 +36,16 @@ export class DriversProvider {
     return this.http.post(this.baseUrl + `/complete-stop.php`, {id: id, time: time});
   }
 
-  saveDrop(id, time, date, containerNumber, comments, signature) {
-    return this.http.post(this.baseUrl + `/save-drop.php`, {id: id, time: time, date: date, container: containerNumber, comments: comments, signature: signature});
+  saveDrop(id, time, date, containerNumber, comments, signature, driver, dropTicket, address) {
+    return this.http.post(this.baseUrl + `/save-drop.php`, {id: id, time: time, date: date, container: containerNumber, comments: comments, signature: signature, driver: driver, dropTicket: dropTicket, address: address});
   }
 
   savePickup(id, time, date, containerNumber, pic) {
     return this.http.post(this.baseUrl + `/save-pickup.php`, {id: id, time: time, date: date, container: containerNumber, pic: pic});
+  }
+
+  saveSwitch(id, time, date, containerOne, containerTwo, comments, signature, pic, dropTicket, driver, address){
+    return this.http.post(this.baseUrl + `/save-switch.php`, {id: id, time: time, date: date, container: containerOne, containerTwo: containerTwo, comments: comments, signature: signature, pic: pic, driver: driver, dropTicket: dropTicket, address: address});
   }
 
   registerDevice(id, deviceId){

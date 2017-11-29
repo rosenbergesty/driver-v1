@@ -25,11 +25,11 @@
     <ion-list>
       <ion-item>
         <ion-label stacked>Container Number</ion-label>
-        <ion-input type="text"></ion-input>
+        <ion-input type="text" [(ngModel)]="containerOne"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label stacked>Comments</ion-label>
-        <ion-input type="text"></ion-input>
+        <ion-input type="text" [(ngModel)]="comments"></ion-input>
       </ion-item>
     </ion-list>
     <ion-label stacked padding>Signature</ion-label>
@@ -43,7 +43,7 @@
     <ion-list>
       <ion-item>
         <ion-label stacked>Container Number</ion-label>
-        <ion-input type="text"></ion-input>
+        <ion-input type="text" [(ngModel)]="containerTwo"></ion-input>
       </ion-item>
     </ion-list>
     <ion-label stacked padding>Image</ion-label>

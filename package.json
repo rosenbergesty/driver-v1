@@ -72,7 +72,6 @@
       "cordova-plugin-whitelist": {},
       "cordova-plugin-camera": {},
       "cordova-plugin-device": {},
-      "cordova-plugin-geolocation": {},
       "cordova-plugin-ionic-webview": {},
       "cordova-plugin-network-information": {},
       "cordova-plugin-splashscreen": {},
@@ -81,11 +80,14 @@
       "ionic-plugin-keyboard": {},
       "cordova-android-support-gradle-release": {
         "ANDROID_SUPPORT_VERSION": "24.+"
+      },
+      "cordova-plugin-geolocation": {
+        "GEOLOCATION_USAGE_DESCRIPTION": "To locate you"
       }
     },
     "platforms": [
-      "ios",
-      "android"
+      "android",
+      "ios"
     ]
   }
 }

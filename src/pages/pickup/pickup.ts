@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, AlertController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, AlertController, LoadingController } from 'ionic-angular';
 import { Camera, CameraOptions } from '@ionic-native/camera';
 
 import * as firebase from 'firebase';
@@ -27,7 +27,7 @@ export class PickupPage {
   public image: String;
   public containerNumber: any;
 
-  constructor(public navCtrl: NavController, 
+  constructor(public navCtrl: NavController, public loadingCtrl: LoadingController,
     public navParams: NavParams, public camera: Camera, 
     public drivers: DriversProvider, public alertCtrl: AlertController) {
     this.stop = new Stop();
@@ -64,7 +64,13 @@ export class PickupPage {
 
   save() {
     if (this.containerNumber && this.image){
-      // Signature
+      // Loader 
+      let loading = this.loadingCtrl.create({
+        content: 'Saving pickup...'
+      });
+      loading.present();
+
+      // Image
       let img = this.dataURItoBlob(this.image);
       var uploadTask = firebase.storage().ref().child('images/img-'+this.stop.ID+'.png').put(img);
       uploadTask.then(this.onSuccess, this.onError);
@@ -77,8 +83,10 @@ export class PickupPage {
       this.drivers.savePickup(this.stop.ID, time, date, this.containerNumber, 'images/img-'+this.stop.ID+'.png').subscribe(
         data => {
           console.log('successful save');
-          this.navCtrl.push(HomePage);
+          loading.dismiss();
+          this.navCtrl.popToRoot();
         }, err => {
+          loading.dismiss();
           console.log(JSON.stringify(err));
           let alert = this.alertCtrl.create({
             title: 'Error',
