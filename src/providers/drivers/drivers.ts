@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
+import { Storage } from '@ionic/storage';
+// import { NavController } from 'ionic-angular';
 import 'rxjs/add/operator/map';
+
+// import { LoginPage } from '../../pages/login/login';
 
 /*
   Generated class for the DriversProvider provider.
@@ -10,18 +14,51 @@ import 'rxjs/add/operator/map';
 */
 @Injectable()
 export class DriversProvider {
-  baseUrl = "http://estyrosenberg.com/guma/backend";
+  private baseUrl = "http://estyrosenberg.com/guma/backend";
+  public user: any;
 
-  constructor(public http: Http) {
+  constructor(public http: Http, public storage: Storage) {
   }
 
   loginDriver(email, password) {
-    let user = this.http.post(this.baseUrl + `/login-driver.php`, {username: email, password: password});
-    return user;
+    this.user = this.http.post(this.baseUrl + `/login-driver.php`, {username: email, password: password});
+    return this.user;
   }
 
-  getStopsByDate(driverId, date) {
-    return this.http.post(this.baseUrl + `/fetch-stops-by-date.php`, {id: driverId, date: date}); 
+  logout() {
+    this.user = {};
+  }
+
+  load() {
+    this.storage.get('user').then((val) => {
+      this.user = val;
+    })
+  }
+
+  loadDriver() {
+    if (this.user) {
+      return Promise.resolve(this.user);
+    }
+ 
+    return new Promise(resolve => {
+      this.storage.get('user')
+        .then(data => {
+          if(data != null){
+            this.user = data;
+            resolve(this.user);            
+          }
+        });
+    });
+  }
+
+  getDriver() {
+    if(this.user){
+      return this.user;
+    } else {
+      this.loadDriver().then(data => {
+        return this.user;
+      })
+    }
   }
 
   startStop(id, eta, time){
@@ -51,4 +88,5 @@ export class DriversProvider {
   registerDevice(id, deviceId){
     return this.http.post(this.baseUrl + `/add-device.php`, {id: id, device: deviceId}); 
   }
+
 }

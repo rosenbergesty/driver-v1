@@ -49,6 +49,9 @@
     <ion-label stacked padding>Image</ion-label>
     <div (click)="takePicture()" id="image-box">
       <img [src]="image" *ngIf="image" />
+      <div *ngIf="!image" class="camera-button">
+        <ion-icon name="camera" center padding margin></ion-icon>
+      </div>
     </div>
   </ion-card>
 

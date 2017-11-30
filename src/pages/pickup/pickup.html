@@ -29,7 +29,7 @@
       </ion-item>
     </ion-list>
     <ion-label stacked padding>Image</ion-label>
-    <div (click)="takePicture()" id="image-box" padding-left padding-right padding-bottom>
+    <div (click)="takePicture()" id="image-box" padding-left padding-right padding-bottom> 
       <img [src]="image" *ngIf="image" />
       <div *ngIf="!image" class="camera-button">
         <ion-icon name="camera" center padding margin></ion-icon>

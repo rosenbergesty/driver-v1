@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 
 import { Stop } from '../../models/stop';
 import { DriversProvider } from '../../providers/drivers/drivers';
+import { StopsProvider } from '../../providers/stops/stops';
 
 /**
  * Generated class for the SwitchPage page.
@@ -42,11 +43,19 @@ export class SwitchPage {
   constructor(public navCtrl: NavController, public storage: Storage,
     public navParams: NavParams, public alertCtrl: AlertController,
     public camera: Camera, public loadingCtrl: LoadingController,
-    public drivers: DriversProvider) {
+    public drivers: DriversProvider, public stopsPvdr: StopsProvider) {
     this.stop = new Stop();
     this.stop.address = '';
 
-    firebase.initializeApp(environment.firebase);
+    try {
+      firebase.initializeApp(environment.firebase);
+    } catch (err) {
+      // we skip the "already exists" message which is
+      // not an actual error when we're hot-reloading
+      if (!/already exists/.test(err.message)) {
+        console.error('Firebase initialization error', err.stack)
+      }
+    }
   }
 
   ionViewDidLoad() {
@@ -94,7 +103,7 @@ export class SwitchPage {
     if (this.containerOne && this.image && this.containerTwo){
       // Loader 
       let loading = this.loadingCtrl.create({
-        content: 'Saving drop...'
+        content: 'Saving switch...'
       });
       loading.present();
 
@@ -127,8 +136,20 @@ export class SwitchPage {
               var pdf = data.json().message;
               firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
                 console.log('Uploaded file');
-                loading.dismiss();
-                context.navCtrl.popToRoot();
+                if(context.drivers.user){
+                  console.log('hey');
+                    context.stopsPvdr.load(true, context.drivers.user.ID);
+                    loading.dismiss();
+                    context.navCtrl.popToRoot();            
+                } else {
+                  console.log('hey2');
+                  context.drivers.loadDriver().then((val) => {
+                    console.log('hey3');
+                    context.stopsPvdr.load(true, val.ID);
+                    loading.dismiss();
+                    context.navCtrl.popToRoot();
+                  }); 
+                }
               });
             } else {
               // Alert that error

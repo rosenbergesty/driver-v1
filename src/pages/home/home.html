@@ -35,7 +35,7 @@
     <div [ngSwitch]="stopStatus">
 
       <ion-list *ngSwitchCase="'pending'">
-        <ion-item-sliding *ngFor="let stop of pendingStops">
+        <ion-item-sliding *ngFor="let stop of stopsPvdr.stops.pending">
           <ion-item (click)="startTrip(stop)">
             <ion-avatar item-start>
               <div class="icon-wrapper">
@@ -49,6 +49,12 @@
           </ion-item>  
 
           <ion-item-options side="right">
+
+            <button *ngIf="stop.comment" ion-button (click)="showComment(stop.comment)" class="comment">
+              <ion-icon name="help"></ion-icon>
+              Comment
+            </button>
+
             <button ion-button (click)="complete(stop)">
               <ion-icon name="done-all"></ion-icon>
               Complete
@@ -58,7 +64,7 @@
       </ion-list>
 
       <ion-list *ngSwitchCase="'completed'">
-        <ion-item *ngFor="let stop of completedStops">
+        <ion-item *ngFor="let stop of stopsPvdr.stops.completed">
           <ion-avatar item-start>
             <div class="icon-wrapper">
               <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>

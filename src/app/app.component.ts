@@ -4,6 +4,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Storage } from '@ionic/storage';
 
+import { StopsProvider } from '../providers/stops/stops';
 import { TabsPage } from '../pages/tabs/tabs';
 
 @Component({
@@ -13,16 +14,20 @@ export class MyApp {
   rootPage:any = TabsPage;
 
   constructor(private platform: Platform, statusBar: StatusBar, 
-    splashScreen: SplashScreen, private storage: Storage) {
+    splashScreen: SplashScreen, private storage: Storage,
+    private stopsPvdr: StopsProvider) {
     platform.ready().then(() => {
       statusBar.styleDefault();
       splashScreen.hide();
 
       // OneSignal
-      window["plugins"].OneSignal.setLogLevel({logLevel: 6, visualLevel: 0});
-
       var notificationOpenedCallback = function(jsonData) {
-        
+        storage.get('user').then((val) => {
+          var id = val.ID;
+          var date = new Date();
+          var today = date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+          stopsPvdr.load(true, id);
+        })
       }
 
       window["plugins"].OneSignal
@@ -35,23 +40,6 @@ export class MyApp {
       window["plugins"].OneSignal.getPermissionSubscriptionState(function(status) {
         storage.set("onesignal-id", status.subscriptionStatus.userId);
       });
-
-      // console.log('start');
-      // this.oneSignal.setLogLevel({logLevel: 6, visualLevel: 0});
-      // this.oneSignal.startInit('9f03606d-9cc7-46a9-8083-f25629aba6be', '608652425053');
-      // this.oneSignal.inFocusDisplaying(this.oneSignal.OSInFocusDisplayOption.InAppAlert);
-      // this.oneSignal.handleNotificationReceived().subscribe(() => {
-      //  // do something when notification is received
-      //   console.log('notification recieved');
-      // });
-      // this.oneSignal.handleNotificationOpened().subscribe(() => {
-      //   // do something when a notification is opened
-      //   console.log('notification opened');
-      // });
-
-      // this.oneSignal.endInit();
-      // console.log('end');
-
     });
   }
 }

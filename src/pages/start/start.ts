@@ -20,8 +20,6 @@ import { DirectionsPage } from '../directions/directions';
   providers: [ DriversProvider, MapsProvider ]
 })
 export class StartPage {
-
-  public user: Driver;
   public duration: any;
   public loading: any;
   public durationValue: any;
@@ -49,15 +47,13 @@ export class StartPage {
     public alertCtrl: AlertController,
     public modalCtrl: ModalController) {
 
-    this.storage.get('user').then((val) => {
-      this.user = val;
-    });
   }
 
   ionViewDidLoad(){
     this.initMap();
   }
 
+  /* Initialize Map */
   initMap() {
     // display loader 
     this.loading = this.loadingCtrl.create({
@@ -73,10 +69,10 @@ export class StartPage {
     }
 
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-
     this.loadRoute();
   }
 
+  // Load Route
   loadRoute() {
     let directionsService = new google.maps.DirectionsService;
     this.directionsDisplay = new google.maps.DirectionsRenderer;
@@ -114,6 +110,7 @@ export class StartPage {
     });
   }
 
+  /* Start Trip */
   startTrip() {
     // Save eta and start time
     var dateObj = Date.now();

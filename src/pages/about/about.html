@@ -6,6 +6,17 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let stop of stopsPvdr.allStops">
+      <h2>{{ stop.address | slice:0:40 }}{{ stop.address.length > 40 ? "...":""}}</h2>
+      <h3>{{ stop.size }} yard - {{ stop.type }}</h3>
+      <p>{{ stop.date }}</p>
+    </ion-item>
+  </ion-list>
+
+  <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

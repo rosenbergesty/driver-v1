@@ -26,6 +26,7 @@ import { DirectionsPage } from '../pages/directions/directions';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { DriversProvider } from '../providers/drivers/drivers';
+import { StopsProvider } from '../providers/stops/stops';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,8 @@ import { DriversProvider } from '../providers/drivers/drivers';
     Geolocation,
     Network, 
     Camera,
+    DriversProvider,
+    StopsProvider,
     // OneSignal
   ]
 })

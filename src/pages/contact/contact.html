@@ -1,17 +1,24 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Contact
+      Profile
     </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content>
+<ion-content padding>
   <ion-list>
-    <ion-list-header>Follow us on Twitter</ion-list-header>
+    <ion-list-header>
+      User Details
+    </ion-list-header>
     <ion-item>
-      <ion-icon name="ionic" item-start></ion-icon>
-      @ionicframework
+    <ion-icon name="person" item-start></ion-icon>
+      {{ drivers.user.name }}
+    </ion-item>
+    <ion-item>
+      <ion-icon name="at" item-start></ion-icon>
+      {{ drivers.user.email }}
     </ion-item>
   </ion-list>
+  <button ion-button full (click)="logout()">Logout</button>
 </ion-content>

@@ -1,9 +1,10 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, ModalController } from 'ionic-angular';
+import { NavController, ModalController, AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 
 import { Driver } from '../../models/driver';
 import { DriversProvider } from '../../providers/drivers/drivers';
+import { StopsProvider } from '../../providers/stops/stops';
 import { MapsProvider } from '../../providers/maps/maps';
 import { StartPage } from '../start/start';
 import { DropPage } from '../drop/drop';
@@ -14,13 +15,11 @@ import { LoginPage } from '../login/login';
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
-  providers: [ DriversProvider, MapsProvider ]
+  providers: [ MapsProvider ]
 })
 export class HomePage {
 
   public user: Driver;
-  public pendingStops = [];
-  public completedStops = [];
   public stopStatus = 'pending';
 
   public showList = true;
@@ -32,64 +31,35 @@ export class HomePage {
   @ViewChild('map') mapElement;
   map: any;
 
-  constructor( public modalCtrl: ModalController, 
+  constructor( public modalCtrl: ModalController, public stopsPvdr: StopsProvider,
     public navCtrl: NavController, public storage: Storage, 
-    public drivers: DriversProvider, public maps: MapsProvider) {
+    public drivers: DriversProvider, public maps: MapsProvider,
+    public alertCtrl: AlertController) {
+  }
+
+  ionViewDidLoad(){
+    this.initMap();
+
+    // Get driver and load stops
     this.storage.get('user').then((val) => {
       console.log(val);
       if(val != null){
         this.user = val;
-        this.fetchStops();
+        this.drivers.user = val;
+        this.fetchStops(true);
       } else {
         this.navCtrl.push(LoginPage);
       }
     });
   }
 
-  public fetchStops(){
+  /* Get Today's Stops */
+  public fetchStops(reload){
     var id = this.user.ID;
-    var date = new Date();
-    var today = date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
-
-    console.log(id);
-    // Get today's stops
-    this.drivers.getStopsByDate(id, today).subscribe(
-      data => {
-        var resp = data.json();
-        if(resp == '0 results'){
-          console.log('No results');
-        } else {
-          resp.forEach(stop =>{
-            if(stop.status == 'pending'){
-              this.pendingStops.push(stop);
-              this.showStops();
-            } else if (stop.status == 'completed'){
-              this.completedStops.push(stop);
-            }
-          })
-        }
-      },
-      err => {
-        console.log(err);
-      },
-      () => {
-        console.log('fetched stops');
-      });
+    this.stopsPvdr.load(reload, id);
   }
 
-  public toggleMap(){
-    this.showList = !this.showList;
-    this.showMap = !this.showMap;
-
-    if(this.showMap){
-      this.showStops();
-    }
-  }
-
-  ionViewDidLoad(){
-    this.initMap();
-  }
-
+  /* Initialize Google Map */
   initMap() {
     let latLng = new google.maps.LatLng(40.7128, -74.0060);
     let mapOptions = {
@@ -101,6 +71,17 @@ export class HomePage {
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
   }
 
+  /* Toggle Map View */
+  public toggleMap(){
+    this.showList = !this.showList;
+    this.showMap = !this.showMap;
+
+    if(this.showMap){
+      this.showStops();
+    }
+  }
+
+  /* Show Stop Markers */
   showStops() {
     if(this.showMap){
       if(this.stopStatus == 'pending'){
@@ -108,7 +89,7 @@ export class HomePage {
           this.completedMarkers[i].setMap(null);
         }
         this.completedMarkers = [];
-        this.pendingStops.forEach(stop => {
+        this.stopsPvdr.stops.pending.forEach(stop => {
           this.maps.getCode(stop.address).subscribe(val=>{
             var latLng = val.json().results[0].geometry.location;
             var marker = new google.maps.Marker({
@@ -127,7 +108,7 @@ export class HomePage {
           this.pendingMarkers[i].setMap(null);
         }
         this.pendingMarkers = [];
-        this.completedStops.forEach(stop => {
+        this.stopsPvdr.stops.completed.forEach(stop => {
           this.maps.getCode(stop.address).subscribe(val=>{
             var latLng = val.json().results[0].geometry.location;
             var marker = new google.maps.Marker({
@@ -145,10 +126,23 @@ export class HomePage {
     }
   }
 
+  /* Show Comment */
+  showComment(comment){
+    let alert = this.alertCtrl.create({
+      title: 'Comment',
+      subTitle: comment,
+      buttons: ['OK']
+    });
+    alert.present();
+  }
+
+
+  /* Start Trip */
   startTrip(stop){
     this.navCtrl.push(StartPage, stop);
   }
 
+  /* Complete Trip */
   complete(stop){
     var location: any;
     switch(stop.type){
@@ -167,9 +161,7 @@ export class HomePage {
 
   // Pull to refresh 
   refresh(event){
-    this.completedStops = [];
-    this.pendingStops = [];
-    this.fetchStops();
+    this.fetchStops(true);
     event.complete();
   }
 

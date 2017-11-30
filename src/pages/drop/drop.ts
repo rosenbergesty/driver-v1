@@ -8,6 +8,7 @@ import { environment } from '../../environments/environment';
 
 import { Stop } from '../../models/stop';
 import { DriversProvider } from '../../providers/drivers/drivers';
+import { StopsProvider } from '../../providers/stops/stops';
 
 /**
  * Generated class for the DropPage page.
@@ -37,12 +38,21 @@ export class DropPage {
   };
   public signatureImage: string;
 
-  constructor(public navCtrl: NavController, public loadingCtrl: LoadingController,
+  constructor(public navCtrl: NavController, 
+    public loadingCtrl: LoadingController, public stopsPvdr: StopsProvider,
     public navParams: NavParams, public drivers: DriversProvider,
     public alertCtrl: AlertController, public storage: Storage) {
     this.stop = new Stop();
     this.stop.address = '';
-    firebase.initializeApp(environment.firebase);
+    try {
+      firebase.initializeApp(environment.firebase);
+    } catch (err) {
+      // we skip the "already exists" message which is
+      // not an actual error when we're hot-reloading
+      if (!/already exists/.test(err.message)) {
+        console.error('Firebase initialization error', err.stack)
+      }
+    }
   }
 
   ionViewDidLoad() {
@@ -101,9 +111,20 @@ export class DropPage {
             var context = this;
             var pdf = data.json().message;
             firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
-              console.log('Uploaded file');
-              loading.dismiss();
-              context.goToHome();
+              if(context.drivers.user){
+                  console.log('hey');
+                    context.stopsPvdr.load(true, context.drivers.user.ID);
+                    loading.dismiss();
+                    context.navCtrl.popToRoot();            
+                } else {
+                  console.log('hey2');
+                  context.drivers.loadDriver().then((val) => {
+                    console.log('hey3');
+                    context.stopsPvdr.load(true, val.ID);
+                    loading.dismiss();
+                    context.navCtrl.popToRoot();
+                  }); 
+                }
             });
           } else {
             // Alert that error

@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 
 import { Stop } from '../../models/stop';
 import { DriversProvider } from '../../providers/drivers/drivers';
+import { StopsProvider } from '../../providers/stops/stops';
 import { HomePage } from '../home/home';
 
 
@@ -28,11 +29,20 @@ export class PickupPage {
   public containerNumber: any;
 
   constructor(public navCtrl: NavController, public loadingCtrl: LoadingController,
-    public navParams: NavParams, public camera: Camera, 
+    public navParams: NavParams, public camera: Camera, public stopsPvdr: StopsProvider,
     public drivers: DriversProvider, public alertCtrl: AlertController) {
     this.stop = new Stop();
     this.stop.address = '';
-    firebase.initializeApp(environment.firebase);
+
+    try {
+      firebase.initializeApp(environment.firebase);
+    } catch (err) {
+      // we skip the "already exists" message which is
+      // not an actual error when we're hot-reloading
+      if (!/already exists/.test(err.message)) {
+        console.error('Firebase initialization error', err.stack)
+      }
+    }
   }
 
   ionViewDidLoad() {
@@ -84,7 +94,17 @@ export class PickupPage {
         data => {
           console.log('successful save');
           loading.dismiss();
-          this.navCtrl.popToRoot();
+          if(this.drivers.user){
+              this.stopsPvdr.load(true, this.drivers.user.ID);
+              loading.dismiss();
+              this.navCtrl.popToRoot();            
+          } else {
+            this.drivers.loadDriver().then((val) => {
+              this.stopsPvdr.load(true, val.ID);
+              loading.dismiss();
+              this.navCtrl.popToRoot();
+            }); 
+          }
         }, err => {
           loading.dismiss();
           console.log(JSON.stringify(err));
