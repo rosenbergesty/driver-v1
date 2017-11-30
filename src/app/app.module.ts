@@ -38,10 +38,9 @@ import { StopsProvider } from '../providers/stops/stops';
     LoginPage,
     StartPage,
     MapPage,
-    DropPage,
-    PickupPage,
-    SwitchPage,
-    DirectionsPage
+    // DropPage,
+    // PickupPage,
+    // SwitchPage
   ],
   imports: [
     BrowserModule,
@@ -49,8 +48,7 @@ import { StopsProvider } from '../providers/stops/stops';
       tabsHideOnSubPages: true
     }),
     IonicStorageModule.forRoot(),
-    HttpModule, 
-    SignaturePadModule
+    HttpModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
