@@ -1,8 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { NavController, NavParams, ViewController, LoadingController, AlertController, ModalController } from 'ionic-angular';
-import { GoogleMaps, GoogleMap } from '@ionic-native/google-maps';
 import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
+import { Network } from '@ionic-native/network';
 
 import { Driver } from '../../models/driver';
 import { DriversProvider } from '../../providers/drivers/drivers';
@@ -34,6 +34,16 @@ export class StartPage {
   public directionSteps: any;
   public curLocation: any;
   public counter: any;
+  public routeCoords: any;
+  public poly: any;
+  public route: any;
+  public startMarker: any;
+  public endMarker: any;
+  public curMarker: any;
+  public endLoc: any;
+  public connected = false;
+
+  public locationError = 0;
 
   constructor( 
     public viewCtrl: ViewController,
@@ -43,6 +53,7 @@ export class StartPage {
     public drivers: DriversProvider, 
     public maps: MapsProvider,
     private geolocation: Geolocation,
+    private network: Network, 
     public loadingCtrl: LoadingController,
     public alertCtrl: AlertController,
     public modalCtrl: ModalController) {
@@ -82,21 +93,66 @@ export class StartPage {
     this.geolocation.getCurrentPosition({enableHighAccuracy: true}).then((resp) => {
       this.curLocation = resp;
       console.log(resp);
-      directionsService.route({
-        origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
-        destination: this.params.data.address,
-        travelMode: google.maps.TravelMode['DRIVING']
-      }, (res, status) => {
-        this.loading.dismiss();
-        if(status == google.maps.DirectionsStatus.OK){
-          this.directions = res;
-          this.duration = res.routes[0].legs[0].duration.text;
-          this.durationValue = res.routes[0].legs[0].duration.value;
-          this.directionsDisplay.setDirections(res);
-        } else {
-          console.warn(status);
-        }
-      })
+
+      var start = resp.coords.longitude + ',' + resp.coords.latitude;
+      this.maps.getCode(this.params.data.address).subscribe(
+        data => {
+          console.log(data.json());
+          this.endLoc = data.json().results[0].geometry.location.lng + ',' + data.json().results[0].geometry.location.lat;
+          var dest = start+'|'+this.endLoc;
+          this.maps.getDirections(dest).subscribe(
+            data => {
+              this.route = data.json().routes[0];
+              this.duration = this.route.summary.duration;
+              this.routeCoords = google.maps.geometry.encoding.decodePath(this.route.geometry);
+              var coordArray = [];
+
+              var start = {"lat": this.routeCoords[0].lat(), "lng": this.routeCoords[0].lng()};
+              var end = {"lat": this.routeCoords[this.routeCoords.length - 1].lat(), "lng": this.routeCoords[this.routeCoords.length - 1].lng()};
+
+              this.startMarker = new google.maps.Marker({
+                position: start,
+                map: this.map,
+                label: 'A'
+              });
+              this.endMarker = new google.maps.Marker({
+                position: end,
+                map: this.map,
+                label: 'B'
+              })
+
+              this.routeCoords.forEach(function(routeItem){
+                var coordPair = {};
+                coordPair["lat"] = routeItem.lat();
+                coordPair["lng"] = routeItem.lng();
+                coordArray.push(coordPair);
+              });
+
+              this.poly = new google.maps.Polyline({
+                strokeColor: '#007aff',
+                strokeOpacity: 1,
+                strokeWeight: 3,
+                map: this.map,
+                path: coordArray
+              });
+
+              this.loading.dismiss();
+
+              console.log(this.route);
+            }, 
+            err => {
+              console.log(err);
+            },
+            () => {
+
+            });
+        }, 
+        err => {
+          console.log(err);
+        },
+        () => {
+
+        });
     }).catch((error) => {
       console.log('Error getting location', error);
       this.loading.dismiss();
@@ -134,14 +190,87 @@ export class StartPage {
     );
 
     this.notStarted = false;
-    this.directionSteps = this.directions.routes[0].legs[0].steps;
+    this.directionSteps = this.route.segments[0].steps;
     this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
     this.map.setZoom(20);
+    var image = {
+      url: 'http://estyrosenberg.com/guma/location-icon.png',
+      size: new google.maps.Size(200, 200),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(75, 75)};
+    var curPos = {"lat": this.routeCoords[0].lat(), "lng": this.routeCoords[0].lng()};
+    this.curMarker = new google.maps.Marker({
+      position: curPos,
+      map: this.map,
+      icon: image
+    });
+    this.startMarker.setMap(null);
 
     this.counter = setInterval(() => {
-      this.refreshRoute();
+      this.geolocation.getCurrentPosition().then((resp) => {
+        this.checkNetwork();
+
+        // Check didn't arrive yet
+        if((this.getDistance(resp.coords.latitude, resp.coords.longitude, this.routeCoords[this.routeCoords.length - 1].lat(), this.routeCoords[this.routeCoords.length - 1].lng(), 'M') * 5280) < 100){
+          clearInterval(this.counter);
+          this.complete();
+        }
+
+        // Check if moved more than 20 feet
+        if(this.connected){
+          if((this.getDistance(this.curLocation.coords.latitude, this.curLocation.coords.longitude, resp.coords.latitude, resp.coords.longitude, 'M') * 2580) > 20){
+            this.curLocation = resp;
+            this.refreshRoute();
+          }          
+        } 
+      }).catch((error) => {
+        this.locationError ++;
+        if(this.locationError > 5){
+          this.loading.dismiss();
+          this.viewCtrl.dismiss();
+          let alert = this.alertCtrl.create({
+            title: 'Location Error',
+            subTitle: 'Can\'t get current location. Check your location services and app permissions.',
+            buttons: ['Dismiss']
+          });
+          alert.present();          
+        }
+
+      });
     }, 3000);
   }
+
+  getDistance(lat1, lon1, lat2, lon2, unit) {
+    var radlat1 = Math.PI * lat1/180;
+    var radlat2 = Math.PI * lat2/180;
+    var theta = lon1-lon2;
+    var radtheta = Math.PI * theta/180;
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist);
+    dist = dist * 180/Math.PI;
+    dist = dist * 60 * 1.1515;
+    if (unit=="K") { dist = dist * 1.609344 }
+    if (unit=="N") { dist = dist * 0.8684 }
+    return dist
+  }
+
+  checkNetwork() {
+    if(this.network.type != 'none' && this.network.type != 'unknown'){
+      this.connected = true;
+    }
+    let disconnectSubscription = this.network.onDisconnect().subscribe(() => {
+      this.connected = false;
+    });
+
+    let connectSubscription = this.network.onConnect().subscribe(() => {
+      setTimeout(() => {
+        if(this.network.type != 'none'){
+          this.connected = true;
+        }
+      }, 3000);
+    });
+  }
+
 
   listDirections() {
     let modal = this.modalCtrl.create(DirectionsPage, {steps: this.directionSteps});;
@@ -149,48 +278,36 @@ export class StartPage {
   }
 
   refreshRoute() {
-    let directionsService = new google.maps.DirectionsService;
-    this.directionsDisplay = new google.maps.DirectionsRenderer;
-    this.directionsDisplay.setMap(this.map);
 
-    this.geolocation.getCurrentPosition().then((resp) => {
-      this.curLocation = resp;
-      directionsService.route({
-        origin: {lat: resp.coords.latitude, lng: resp.coords.longitude},
-        destination: this.params.data.address,
-        travelMode: google.maps.TravelMode['DRIVING']
-      }, (res, status) => {
-        this.loading.dismiss();
-        if(res.routes[0].legs[0].distance.value < 41){
-          if(this.notStarted == false){
-            clearInterval(this.counter);
-            this.complete();
-          }
-        } else {
-          this.directionsDisplay.setMap(null);
-          if(status == google.maps.DirectionsStatus.OK){
-            this.directions = res;
-            this.directionSteps = res.routes[0].legs;
-            this.duration = res.routes[0].legs[0].duration.text;
-            this.directionsDisplay.setDirections(res);
-          } else {
-            console.warn(status);
-          } 
+    var start = this.curLocation.coords.longitude + ',' + this.curLocation.coords.latitude;
+    var dest = start+'|'+this.endLoc;
+    this.maps.getDirections(dest).subscribe(
+      data => {
+        this.route = data.json().routes[0];
+        this.routeCoords = google.maps.geometry.encoding.decodePath(this.route.geometry);
+        var coordArray = [];
+
+        this.routeCoords.forEach(function(routeItem){
+          var coordPair = {};
+          coordPair["lat"] = routeItem.lat();
+          coordPair["lng"] = routeItem.lng();
+          coordArray.push(coordPair);
+        });
+
+        this.poly.setPath(coordArray);
+
+        var curPos = {"lat": this.routeCoords[0].lat(), "lng": this.routeCoords[0].lng()};
+        this.curMarker.setPosition(curPos);
+
+        if((this.getDistance(this.curLocation.coords.latitude, this.curLocation.coords.longitude, coordArray[coordArray.length - 1][0], coordArray[coordArray.length - 1][0], 'M') * 5280) < 100){
+          this.complete();
         }
-      })
-    }).catch((error) => {
-      this.loading.dismiss();
-      this.viewCtrl.dismiss();
-      let alert = this.alertCtrl.create({
-        title: 'Location Error',
-        subTitle: 'Can\'t get current location. Check your location services and app permissions.',
-        buttons: ['Dismiss']
-      });
-      alert.present();
+      }, 
+      err => { console.log(err); },
+      () => {}
+    );
 
-    });
-
-    this.directionSteps = this.directions.routes[0].legs[0].steps;
+    this.directionSteps = this.route.segments[0].steps;
     this.map.setCenter({lat: this.curLocation.coords.latitude, lng: this.curLocation.coords.longitude});
     this.map.setZoom(20);
   }

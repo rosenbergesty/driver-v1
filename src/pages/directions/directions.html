@@ -16,8 +16,8 @@
 <ion-content padding>
   <ion-list>
     <ion-item *ngFor="let step of steps">
-      <h5>{{ step.distance.text }} - {{ step.duration.text }}</h5>
-      <p [innerHTML]="step.instructions"></p>
+      <h5>{{ step.distance | miles }} - {{ step.duration | seconds }}</h5>
+      <h2 [innerHTML]="step.instruction"></h2>
     </ion-item>
   </ion-list>
 </ion-content>

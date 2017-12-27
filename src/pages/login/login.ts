@@ -74,6 +74,7 @@ export class LoginPage {
 
   login() {
     // login
+    this.connected = true;
     if(this.connected == true){   
       this.drivers.loginDriver(this.email, this.password).subscribe(
         data => {
@@ -82,6 +83,8 @@ export class LoginPage {
           if(resp.code == 200){
             this.storage.set('user', resp.data[0]);
             this.storage.get('onesignal-id').then((val) => {
+              console.log('player: ' + val);
+              console.log('onesignal: ' + JSON.stringify(val));
               this.drivers.registerDevice(resp.data[0].ID, val).subscribe(
                 data => {
                   this.navCtrl.push(TabsPage);

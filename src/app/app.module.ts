@@ -28,6 +28,13 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { DriversProvider } from '../providers/drivers/drivers';
 import { StopsProvider } from '../providers/stops/stops';
 
+import { DropPageModule } from '../pages/drop/drop.module';
+import { PickupPageModule } from '../pages/pickup/pickup.module';
+import { SwitchPageModule } from '../pages/switch/switch.module';
+
+import { SecondsPipe } from '../pipes/seconds/seconds';
+import { MilesPipe } from '../pipes/miles/miles';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -38,9 +45,12 @@ import { StopsProvider } from '../providers/stops/stops';
     LoginPage,
     StartPage,
     MapPage,
+    DirectionsPage,
     // DropPage,
     // PickupPage,
-    // SwitchPage
+    // SwitchPage,
+    SecondsPipe,
+    MilesPipe
   ],
   imports: [
     BrowserModule,
@@ -48,7 +58,10 @@ import { StopsProvider } from '../providers/stops/stops';
       tabsHideOnSubPages: true
     }),
     IonicStorageModule.forRoot(),
-    HttpModule
+    HttpModule,
+    DropPageModule,
+    PickupPageModule,
+    SwitchPageModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

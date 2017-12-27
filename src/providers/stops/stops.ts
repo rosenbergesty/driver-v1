@@ -51,6 +51,7 @@ export class StopsProvider {
       this.allStops = data;
     }); 
   }
+  
   fetchMoreStops(driver, count) {
     this.http.post(this.baseUrl + '/fetch-some-stops.php', {driverID: driver.ID, count: count, total: this.allStops.length})
     .map(res => res.json())

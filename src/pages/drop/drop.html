@@ -14,7 +14,7 @@
     </ion-card-header>
 
     <ion-card-content>
-      <p>{{ stop.size }} yard</p>
+      <p>{{ stop.size }} <span *ngIf="stop.size != 'mini'">yard</span></p>
     </ion-card-content>
   </ion-card>
 
@@ -24,7 +24,8 @@
     </ion-card-header>
     <ion-list padding-left padding-right>
       <ion-item>
-        <ion-label stacked>Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size != 'mini'">Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size == 'mini'">Number of Containers</ion-label>
         <ion-input type="text" [(ngModel)]="containerNumber"></ion-input>
       </ion-item>
       <ion-item>

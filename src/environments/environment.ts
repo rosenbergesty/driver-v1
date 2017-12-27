@@ -1,9 +1,9 @@
 export const environment = {
   production: false,
   firebase: {
-    apiKey: 'AIzaSyAmkrLbYOybhxortYvFTK3GrZ7w5AgmLx8',
-    authDomain: 'guma-construction-apps.firebaseapp.com',
-    storageBucket: 'guma-construction-apps.appspot.com',
-    projectId: 'guma-construction-apps'
+    apiKey: 'AIzaSyCXg2i5-YtGC3GnBypwfry0evY0Zs78aI0',
+    authDomain: 'guma-apps.firebaseapp.com',
+    storageBucket: 'guma-apps.appspot.com',
+    projectId: 'guma-apps'
   }
 }

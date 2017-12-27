@@ -31,7 +31,7 @@ export class MyApp {
       }
 
       window["plugins"].OneSignal
-      .startInit("9f03606d-9cc7-46a9-8083-f25629aba6be", "608652425053")
+      .startInit("4c7e2b16-f59d-40cd-9691-6b22ee834474", "404437292662")
       .handleNotificationOpened(notificationOpenedCallback)
       .endInit();
 
@@ -39,6 +39,11 @@ export class MyApp {
 
       window["plugins"].OneSignal.getPermissionSubscriptionState(function(status) {
         storage.set("onesignal-id", status.subscriptionStatus.userId);
+        console.log('player id = ' + status.subscriptionStatus.userId);
+
+        storage.get('onesignal-id').then((val) => {
+          console.log('player id ' + val);
+        });
       });
     });
   }

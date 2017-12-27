@@ -104,13 +104,14 @@ export class DropPage {
       this.drivers.saveDrop(this.stop.ID, time, date, this.containerNumber, this.comments, 'signatures/signature-'+this.stop.ID+'.png', name, 'drop-tickets/drop-'+this.stop.ID+'.pdf', this.stop.address).subscribe(
         data => {
           console.log('Completed Drop');
-          console.log(JSON.stringify(data));
-          console.log(data.json());
+          // console.log(JSON.stringify(data));
+          // console.log(data.json());
 
           if(data.json().code == '200'){
             var context = this;
             var pdf = data.json().message;
             firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
+              console.log('uploaded drop');
               if(context.drivers.user){
                   console.log('hey');
                     context.stopsPvdr.load(true, context.drivers.user.ID);

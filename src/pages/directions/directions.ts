@@ -8,7 +8,6 @@ import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angul
  * Ionic pages and navigation.
  */
 
-@IonicPage()
 @Component({
   selector: 'page-directions',
   templateUrl: 'directions.html',

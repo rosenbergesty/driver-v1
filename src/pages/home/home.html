@@ -41,11 +41,11 @@
               <div class="icon-wrapper">
                 <ion-icon name="sync" *ngIf="stop.type == 'sw'"></ion-icon>
                 <ion-icon name="arrow-round-up" *ngIf="stop.type == 'pu'"></ion-icon>
-                 <ion-icon name="arrow-round-down" *ngIf="stop.type == 'do'"></ion-icon>
+                 <ion-icon name="arrow-round-down" *ngIf="stop.type == 'dp'"></ion-icon>
                </div>
             </ion-avatar>
             <h2>{{ stop.address | slice:0:34 }}{{ stop.address.length > 34 ? "...":""}}</h2>
-            <h3>{{ stop.size }} yard</h3>
+            <h3>{{ stop.size }} <span *ngIf="stop.size != 'mini'">yard</span> <span *ngIf="stop.parking"> | {{ stop.parking }} </span></h3>
           </ion-item>  
 
           <ion-item-options side="right">

@@ -146,7 +146,7 @@ export class HomePage {
   complete(stop){
     var location: any;
     switch(stop.type){
-      case 'do': 
+      case 'dp': 
         location = DropPage;
         break;
       case 'pu':

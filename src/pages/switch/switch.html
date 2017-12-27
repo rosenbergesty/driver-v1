@@ -24,7 +24,8 @@
     </ion-card-header>
     <ion-list>
       <ion-item>
-        <ion-label stacked>Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size != 'mini'">Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size == 'mini'">Number of Containers</ion-label>
         <ion-input type="text" [(ngModel)]="containerOne"></ion-input>
       </ion-item>
       <ion-item>
@@ -42,7 +43,8 @@
     </ion-card-header>
     <ion-list>
       <ion-item>
-        <ion-label stacked>Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size != 'mini'">Container Number</ion-label>
+        <ion-label stacked *ngIf="stop.size == 'mini'">Number of Containers</ion-label>
         <ion-input type="text" [(ngModel)]="containerTwo"></ion-input>
       </ion-item>
     </ion-list>
