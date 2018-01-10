@@ -27,7 +27,6 @@ export class LoginPage {
     private network: Network, 
     public alertCtrl: AlertController){
     this.storage.get('user').then((val) => {
-      console.log(val);
       if(val != null){
         this.navCtrl.push(TabsPage);
       }
@@ -78,13 +77,10 @@ export class LoginPage {
     if(this.connected == true){   
       this.drivers.loginDriver(this.email, this.password).subscribe(
         data => {
-          console.log('data returned');
           let resp = data.json();
           if(resp.code == 200){
             this.storage.set('user', resp.data[0]);
             this.storage.get('onesignal-id').then((val) => {
-              console.log('player: ' + val);
-              console.log('onesignal: ' + JSON.stringify(val));
               this.drivers.registerDevice(resp.data[0].ID, val).subscribe(
                 data => {
                   this.navCtrl.push(TabsPage);

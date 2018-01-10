@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { NavController, NavParams, ViewController, LoadingController, AlertController, ModalController } from 'ionic-angular';
+import { Platform, NavController, NavParams, ViewController, LoadingController, AlertController, ModalController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Network } from '@ionic-native/network';
@@ -56,7 +56,8 @@ export class StartPage {
     private network: Network, 
     public loadingCtrl: LoadingController,
     public alertCtrl: AlertController,
-    public modalCtrl: ModalController) {
+    public modalCtrl: ModalController,
+    public platform: Platform) {
 
   }
 
@@ -90,80 +91,78 @@ export class StartPage {
 
     this.directionsDisplay.setMap(this.map);
 
-    this.geolocation.getCurrentPosition({enableHighAccuracy: true}).then((resp) => {
-      this.curLocation = resp;
-      console.log(resp);
+    this.platform.ready().then((src) => {
 
-      var start = resp.coords.longitude + ',' + resp.coords.latitude;
-      this.maps.getCode(this.params.data.address).subscribe(
-        data => {
-          console.log(data.json());
-          this.endLoc = data.json().results[0].geometry.location.lng + ',' + data.json().results[0].geometry.location.lat;
-          var dest = start+'|'+this.endLoc;
-          this.maps.getDirections(dest).subscribe(
-            data => {
-              this.route = data.json().routes[0];
-              this.duration = this.route.summary.duration;
-              this.routeCoords = google.maps.geometry.encoding.decodePath(this.route.geometry);
-              var coordArray = [];
+      this.geolocation.getCurrentPosition({timeout: 50000, enableHighAccuracy: true}).then((resp) => {
+        this.curLocation = resp;
 
-              var start = {"lat": this.routeCoords[0].lat(), "lng": this.routeCoords[0].lng()};
-              var end = {"lat": this.routeCoords[this.routeCoords.length - 1].lat(), "lng": this.routeCoords[this.routeCoords.length - 1].lng()};
+        var start = resp.coords.longitude + ',' + resp.coords.latitude;
+        this.maps.getCode(this.params.data.address).subscribe(
+          data => {
+            this.endLoc = data.json().results[0].geometry.location.lng + ',' + data.json().results[0].geometry.location.lat;
+            var dest = start+'|'+this.endLoc;
+            this.maps.getDirections(dest).subscribe(
+              data => {
+                this.route = data.json().routes[0];
+                this.duration = this.route.summary.duration;
+                this.routeCoords = google.maps.geometry.encoding.decodePath(this.route.geometry);
+                var coordArray = [];
 
-              this.startMarker = new google.maps.Marker({
-                position: start,
-                map: this.map,
-                label: 'A'
+                var start = {"lat": this.routeCoords[0].lat(), "lng": this.routeCoords[0].lng()};
+                var end = {"lat": this.routeCoords[this.routeCoords.length - 1].lat(), "lng": this.routeCoords[this.routeCoords.length - 1].lng()};
+
+                this.startMarker = new google.maps.Marker({
+                  position: start,
+                  map: this.map,
+                  label: 'A'
+                });
+                this.endMarker = new google.maps.Marker({
+                  position: end,
+                  map: this.map,
+                  label: 'B'
+                })
+
+                this.routeCoords.forEach(function(routeItem){
+                  var coordPair = {};
+                  coordPair["lat"] = routeItem.lat();
+                  coordPair["lng"] = routeItem.lng();
+                  coordArray.push(coordPair);
+                });
+
+                this.poly = new google.maps.Polyline({
+                  strokeColor: '#007aff',
+                  strokeOpacity: 1,
+                  strokeWeight: 3,
+                  map: this.map,
+                  path: coordArray
+                });
+
+                this.loading.dismiss();
+              }, 
+              err => {
+                console.log(JSON.stringify(err.json()));
+              },
+              () => {
+                console.log('fetched.');
               });
-              this.endMarker = new google.maps.Marker({
-                position: end,
-                map: this.map,
-                label: 'B'
-              })
+          }, 
+          err => {
+            console.log(err);
+          },
+          () => {
 
-              this.routeCoords.forEach(function(routeItem){
-                var coordPair = {};
-                coordPair["lat"] = routeItem.lat();
-                coordPair["lng"] = routeItem.lng();
-                coordArray.push(coordPair);
-              });
-
-              this.poly = new google.maps.Polyline({
-                strokeColor: '#007aff',
-                strokeOpacity: 1,
-                strokeWeight: 3,
-                map: this.map,
-                path: coordArray
-              });
-
-              this.loading.dismiss();
-
-              console.log(this.route);
-            }, 
-            err => {
-              console.log(err);
-            },
-            () => {
-
-            });
-        }, 
-        err => {
-          console.log(err);
-        },
-        () => {
-
+          });
+      }).catch((error) => {
+        this.loading.dismiss();
+        this.viewCtrl.dismiss();
+        let alert = this.alertCtrl.create({
+          title: 'Location Error',
+          subTitle: 'Can\'t get current location. Check your location services and app permissions.',
+          buttons: ['Dismiss']
         });
-    }).catch((error) => {
-      console.log('Error getting location', error);
-      this.loading.dismiss();
-      this.viewCtrl.dismiss();
-      let alert = this.alertCtrl.create({
-        title: 'Location Error',
-        subTitle: 'Can\'t get current location. Check your location services and app permissions.',
-        buttons: ['Dismiss']
+        alert.present();
       });
-      alert.present();
-    });
+    })
   }
 
   /* Start Trip */
@@ -179,7 +178,7 @@ export class StartPage {
 
     this.drivers.startStop(this.params.data.ID, eta, time).subscribe(
       data => {
-        console.log(data.json());
+        
       },
       err => {
         console.log(err.json());
@@ -211,7 +210,7 @@ export class StartPage {
         this.checkNetwork();
 
         // Check didn't arrive yet
-        if((this.getDistance(resp.coords.latitude, resp.coords.longitude, this.routeCoords[this.routeCoords.length - 1].lat(), this.routeCoords[this.routeCoords.length - 1].lng(), 'M') * 5280) < 100){
+        if((this.getDistance(resp.coords.latitude, resp.coords.longitude, this.routeCoords[this.routeCoords.length - 1].lat(), this.routeCoords[this.routeCoords.length - 1].lng(), 'M') * 5280) <= 100){
           clearInterval(this.counter);
           this.complete();
         }
@@ -328,7 +327,7 @@ export class StartPage {
     var type = this.params.data.type;
     var location: any;
     switch(type){
-      case 'do':
+      case 'dp':
         location = DropPage;
         break;
       case 'pu':

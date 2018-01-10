@@ -32,8 +32,6 @@ export class MapPage {
     this.storage.get('user').then((val) => {
       this.user = val;
     });
-
-    console.log(params);
   }
 
   ionViewDidLoad(){
@@ -49,8 +47,6 @@ export class MapPage {
     }
 
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-
-    console.log(this.params.data);
 
     this.loadRoute();
   }

@@ -99,7 +99,6 @@ export class SwitchPage {
   }
 
   save() {
-    console.log(this.containerTwo);
     if (this.containerOne && this.image && this.containerTwo){
       // Loader 
       let loading = this.loadingCtrl.create({
@@ -125,26 +124,19 @@ export class SwitchPage {
 
       this.storage.get('user').then((val) => {
         var name = val.name;
-        this.drivers.saveSwitch(this.stop.ID, time, date, this.containerOne, this.containerTwo, this.comments, 'signatures/signature-'+this.stop.ID+'.png', 'images/img-'+this.stop.ID+'.png', name, 'drop-tickets/drop-'+this.stop.ID+'.pdf', this.stop.address).subscribe(
+        this.drivers.saveSwitch(this.stop.ID, time, date, this.containerOne, this.containerTwo, this.comments, 'signatures/signature-'+this.stop.ID+'.png', 'images/img-'+this.stop.ID+'.png', 'drop-tickets/drop-'+this.stop.ID+'.pdf', name, this.stop.address).subscribe(
           data => {
-            console.log('Completed Drop');
-            console.log(JSON.stringify(data));
             console.log(data.json());
-
             if(data.json().code == '200'){
               var context = this;
               var pdf = data.json().message;
               firebase.storage().ref().child('drop-tickets/drop-'+this.stop.ID+'.pdf').putString(pdf, 'base64').then(function(snapshot){
-                console.log('Uploaded file');
                 if(context.drivers.user){
-                  console.log('hey');
                     context.stopsPvdr.load(true, context.drivers.user.ID);
                     loading.dismiss();
                     context.navCtrl.popToRoot();            
                 } else {
-                  console.log('hey2');
                   context.drivers.loadDriver().then((val) => {
-                    console.log('hey3');
                     context.stopsPvdr.load(true, val.ID);
                     loading.dismiss();
                     context.navCtrl.popToRoot();
@@ -165,7 +157,7 @@ export class SwitchPage {
           }, err => {
             console.log(JSON.stringify(err));
           }, () => {
-            
+
           });
       })
     }

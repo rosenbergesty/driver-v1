@@ -14,7 +14,7 @@ import 'rxjs/add/operator/map';
 */
 @Injectable()
 export class DriversProvider {
-  private baseUrl = "http://estyrosenberg.com/guma/backend";
+  private baseUrl = "http://gumadispatch.com/backend";
   public user: any;
 
   constructor(public http: Http, public storage: Storage) {

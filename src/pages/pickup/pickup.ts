@@ -92,7 +92,6 @@ export class PickupPage {
 
       this.drivers.savePickup(this.stop.ID, time, date, this.containerNumber, 'images/img-'+this.stop.ID+'.png').subscribe(
         data => {
-          console.log('successful save');
           loading.dismiss();
           if(this.drivers.user){
               this.stopsPvdr.load(true, this.drivers.user.ID);
@@ -107,7 +106,6 @@ export class PickupPage {
           }
         }, err => {
           loading.dismiss();
-          console.log(JSON.stringify(err));
           let alert = this.alertCtrl.create({
             title: 'Error',
             subTitle: 'There was an error saving the pickup. Please contact support.',

@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
+import { Geolocation } from '@ionic-native/geolocation';
 
 import { Driver } from '../../models/driver';
 import { DriversProvider } from '../../providers/drivers/drivers';
@@ -42,11 +43,22 @@ export class HomePage {
 
     // Get driver and load stops
     this.storage.get('user').then((val) => {
-      console.log(val);
       if(val != null){
         this.user = val;
         this.drivers.user = val;
         this.fetchStops(true);
+
+        this.storage.get('onesignal-id').then((deviceId) => {
+          this.drivers.registerDevice(val.ID, deviceId).subscribe((data) => {
+            console.log('registered');
+            console.log(JSON.stringify(data.json()));
+          }, (err) => {
+            console.log('failed');
+            console.log(err);
+          }, () => {
+
+          })
+        })
       } else {
         this.navCtrl.push(LoginPage);
       }
@@ -100,7 +112,7 @@ export class HomePage {
           }, 
           err => { console.log(err)}, 
           () => {
-            console.log('got Address');
+
           })
         })
       } else if(this.stopStatus == 'completed'){
@@ -119,7 +131,7 @@ export class HomePage {
           }, 
           err => { console.log(err)}, 
           () => {
-            console.log('got Address');
+            
           })
         })
       }

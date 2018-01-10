@@ -7,6 +7,7 @@ import { IonicStorageModule } from '@ionic/storage';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Network } from '@ionic-native/network';
 import { Camera } from '@ionic-native/camera';
+import { Diagnostic } from '@ionic-native/diagnostic';
 // import { OneSignal } from '@ionic-native/onesignal';
 
 import { SignaturePadModule } from 'angular2-signaturepad';
@@ -88,6 +89,7 @@ import { MilesPipe } from '../pipes/miles/miles';
     Camera,
     DriversProvider,
     StopsProvider,
+    Diagnostic
     // OneSignal
   ]
 })

@@ -39,10 +39,8 @@ export class MyApp {
 
       window["plugins"].OneSignal.getPermissionSubscriptionState(function(status) {
         storage.set("onesignal-id", status.subscriptionStatus.userId);
-        console.log('player id = ' + status.subscriptionStatus.userId);
 
         storage.get('onesignal-id').then((val) => {
-          console.log('player id ' + val);
         });
       });
     });

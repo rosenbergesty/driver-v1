@@ -10,7 +10,7 @@ import 'rxjs/add/operator/map';
 */
 @Injectable()
 export class StopsProvider {
-  baseUrl = "http://estyrosenberg.com/guma/backend";
+  baseUrl = "http://gumadispatch.com/backend";
   stops = {pending: [], completed: []};
   allStops = [];
 
@@ -27,7 +27,6 @@ export class StopsProvider {
       this.http.post(this.baseUrl + `/fetch-stops-by-date.php`, {id: driverId, date: today})
         .map(res => res.json())
         .subscribe(data => {
-          console.log(data);
           this.stops.pending = [];
           this.stops.completed = [];
           if(data != '0 results'){
@@ -57,7 +56,6 @@ export class StopsProvider {
     .map(res => res.json())
     .subscribe(data => {
       this.allStops = this.allStops.concat(data);
-      console.log(this.allStops);
     }); 
   }
 

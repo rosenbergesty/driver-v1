@@ -14,7 +14,6 @@ export class MilesPipe implements PipeTransform {
    */
   transform(miles) {
     if(miles < 1){
-      console.log('miles: ' + miles)
       return Math.round(((miles * 5280) * 100) / 100) + ' ft';
     }
     return miles + ' mi';
